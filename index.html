@@ -1024,6 +1024,13 @@ var ROUTINES = [
     bars: 2, tip: "Listen for the loud clicks. They mark the 2s and 3s.",
     make: function () { var out = []; ["5/8", "7/8", "9/8"].forEach(function (m) { ["RLRK", "RKLK", "RLLK", "RRLK"].forEach(function (b) { out.push({ s: b, sub: "s", m: m }); }); }); return out; } }
 ];
+/* Systematic 8-note sticking course, one routine per note value. Same math every time:
+   every R/L combo of two 4-note halves, ordered from flowing singles to stacked doubles. */
+[["q", "Quarter notes", "q"], ["qt", "Quarter-note triplets", "qt"], ["e", "Eighth notes", "e"], ["et", "Eighth-note triplets", "et"], ["s", "Sixteenth notes", "s"]].forEach(function (x) {
+  ROUTINES.push({ cat: "Systematic course", color: "var(--r)", title: "Stick control course: " + x[1], why: "All 256 eight-note R/L stickings in order, easiest to hardest, played as " + x[1].toLowerCase() + ".",
+    bars: 2, tip: "Work down the list in order. Don't skip the ugly ones.",
+    make: function () { var e = []; F4.forEach(function (a) { F4.forEach(function (b) { e.push(a + " " + b); }); }); return items(e.sort(byFeel), x[2], "4/4"); } });
+});
 var RT = { on: false, r: null, items: [], i: 0 };
 function applyItem() {
   var it = RT.items[RT.i], parts = it.s.split(" ");
