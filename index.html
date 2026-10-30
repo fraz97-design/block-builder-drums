@@ -328,7 +328,7 @@ body.stageOn .dock { display: none; }
 
 <main>
   <div id="nojs" style="border:1px solid #e6e8ec;border-radius:10px;padding:14px;margin-bottom:14px;font-size:15px">This page needs to run in a web browser. If you opened it from Files or a preview, open the link in Safari (or the Claude app) instead.</div>
-  <h1>Sixteenth flow blocks <small style="font-size:11px;color:var(--muted);font-weight:400">v11</small></h1>
+  <h1>Sixteenth flow blocks <small style="font-size:11px;color:var(--muted);font-weight:400">v12</small></h1>
   <div class="tabs" role="tablist" id="tabs">
     <button type="button" role="tab" data-tab="routines">Routines</button>
     <button type="button" role="tab" data-tab="practice">Practice</button>
@@ -1538,10 +1538,10 @@ var RITUAL_DATA = [
   { section: "Rudiments", items: [
     N("Three-stroke Ruff", 1, [V("Standard", "@4 llR llR llR llR % % % rrL rrL rrL rrL % % %")]),
     N("Single Drag", 1, [V("Standard", "@8 llR L rrL R llR L rrL R % % %", 1)]),
-    N("Double Drag", 1, [V("Standard", "@t8 llR:3 llR:2 L rrL:3 rrL:2 R % % %", 1)]),
-    N("Single Ratamacue", 1, [V("Standard", "@t8 llR:3 L R L> rrL:3 R L R> % % %", 1)]),
+    N("Double Drag", 1, [V("Standard", "@t8 llR:3 llR L:2 rrL:3 rrL R:2 % % %", 1)]),
+    N("Single Ratamacue", 1, [V("Standard", "@t8 llR L R L>:3 rrL R L R>:3 % % %", 1)]),
     N("Double Ratamacue", 1, [V("Standard", "@t8 llR:2 llR L R L> rrL:2 rrL R L R> % % %", 1)]),
-    N("Triple Ratamacue", 1, [V("Standard", "@t8 llR:2 llR:2 llR:2 L:2 R:2 L>:2 rrL:2 rrL:2 rrL:2 R:2 L:2 R>:2 %2", 1)]),
+    N("Triple Ratamacue", 1, [V("Standard", "@t8 llR:3 llR:3 llR L R L>:3 rrL:3 rrL:3 rrL R L R>:3 %2", 1)]),
     N("Drag Paradiddle No. 1", 2, [V("Standard", "@t8 R>:2 llR L R R L>:2 rrL R L L % % %", 1)]),
     N("Drag Paradiddle No. 2", 2, [V("Standard", "@8 R>:2 llR llR L R R:2 L>:2 rrL rrL R L L:2 %2", 1)]),
     N("Lesson 25", 2, [V("Standard", "@t8 R llR L> R llR L> R llR L> R llR L> % L rrL R> L rrL R> L rrL R> L rrL R> %", 1)]),
@@ -1672,10 +1672,10 @@ function evBuild2(en, nBars, clicksOnly) {
 }
 function evPlayHand(e, t) {
   var q = 60 / PS.bpm, g = e.grace || [], n = g.length, i, gap, offs = [], gv;
-  if (n === 1) { offs = [Math.min(0.040, 0.12 * q)]; gv = 0.38; }            /* flam: one soft grace right before the note */
+  if (n === 1) { offs = [Math.min(0.045, 0.12 * q)]; gv = 0.34; }            /* flam: one soft grace right before the note */
   else if (n > 1) {                                                           /* drag / ruff: 2 to 3 quick graces, even spacing */
-    gap = Math.min(0.026, 0.07 * q); gv = 0.32;
-    for (i = 0; i < n; i++) offs.push(Math.min(0.022 + gap * (n - 1 - i), 0.2 * q));
+    gap = Math.max(0.04, Math.min(0.07, q / 10)); gv = 0.30;                   /* even strokes, spaced by tempo, last one right before the note */
+    for (i = 0; i < n; i++) offs.push(Math.min(gap * (n - i), 0.28 * q));
   }
   g.forEach(function (ch, k) { (HANDS[PS.hs] || HANDS.snare).play(t - offs[k], ch === "L" && PS.split ? 0.82 : 1, gv, A.pg); });
   if (e.buzz) buzzHit(t, Math.max(0.03, e.dur * 60 / (PS.bpm * TPQ)), !!e.acc, e.h);
@@ -1820,7 +1820,7 @@ function renderVer(ver, o) {
     items.forEach(function (it) {
       var e = it.e, x = it.x, id = "rn" + e.i, col2 = e.h === "R" ? "var(--r)" : "var(--l)";
       var s = "";
-      s += svgEl("rect", { class: "gl", x: x - 22 - e.grace.length * 11, y: ys - 66, width: 44 + e.grace.length * 11, height: 176, rx: 12 });
+      s += svgEl("rect", { class: "gl", x: x - 24 - e.grace.length * 18, y: ys - 66, width: 48 + e.grace.length * 18, height: 176, rx: 12 });
       /* stem and head */
       var stemTop = topY;
       s += svgEl("line", { x1: x + 7, y1: ys - 2, x2: x + 7, y2: stemTop, class: "st" });
@@ -1838,13 +1838,13 @@ function renderVer(ver, o) {
       /* graces */
       var gn = e.grace.length;
       e.grace.forEach(function (gh, gi) {
-        var gx = x - 14 - (gn - 1 - gi) * 13;
+        var gx = x - 21 - (gn - 1 - gi) * 18;
         s += svgEl("line", { x1: gx + 4, y1: ys - 2, x2: gx + 4, y2: ys - 30, class: "gst" });
         s += svgEl("ellipse", { cx: gx, cy: ys, rx: 5.5, ry: 4, class: "ghd", transform: "rotate(-18 " + gx + " " + ys + ")" });
         s += svgEl("text", { x: gx, y: ys + 40, class: "gl2", fill: gh === "R" ? "var(--r)" : "var(--l)" }, gh);
         if (gi === gn - 1 && gn === 1) s += svgEl("line", { x1: gx - 2, y1: ys - 10, x2: gx + 9, y2: ys - 24, class: "gst" });
       });
-      if (gn > 1) { var bx1 = x - 14 - (gn - 1) * 13 + 4; s += svgEl("line", { x1: bx1, y1: ys - 30, x2: x - 10, y2: ys - 30, class: "gbm" }) + svgEl("line", { x1: bx1, y1: ys - 24, x2: x - 10, y2: ys - 24, class: "gbm" }); }
+      if (gn > 1) { var bx1 = x - 21 - (gn - 1) * 18 + 4; s += svgEl("line", { x1: bx1, y1: ys - 30, x2: x - 17, y2: ys - 30, class: "gbm" }) + svgEl("line", { x1: bx1, y1: ys - 24, x2: x - 17, y2: ys - 24, class: "gbm" }); }
       s += svgEl("text", { x: x, y: ys + 44, class: "stk", fill: col2 }, e.h);
       out += svgEl("g", { id: id, class: "rn" }, s);
     });
