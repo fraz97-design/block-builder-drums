@@ -234,14 +234,106 @@ body.focus #grid svg { margin: 0 auto; }
 }
 body.focus .upnext { margin: 8px 0 0; padding-top: 6px; width: 100%; justify-content: center; }
 body.focus .nextgrid { opacity: .55; align-items: center; width: 100%; }
+
+/* ---- ritual, library, player stage ---- */
+.tabs { overflow-x: auto; scrollbar-width: none; }
+.tabs button { flex: 1 0 auto; padding: 0 11px; font-size: 13px !important; }
+.bigplay { width: 100%; height: 64px; font-size: 20px; font-weight: 650; background: var(--fg); color: var(--bg); border: 0; border-radius: 12px; margin: 6px 0 4px; }
+.fblock { display: flex; flex-direction: column; gap: 8px; }
+.fsel { height: 44px; font: inherit; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); padding: 0 10px; max-width: 100%; }
+.plist { list-style: none; margin: 0; padding: 0; }
+.plist li { margin: 0; }
+.pl { width: 100%; display: flex; align-items: baseline; gap: 8px; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 11px 2px; }
+.pl b { font-weight: 600; }
+.pl span { color: var(--muted); font-size: 13px; flex: 1; }
+.pl i { color: var(--muted); font-size: 12px; font-style: normal; font-family: var(--mono); }
+.lcard { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+.lname { font-weight: 650; margin-bottom: 6px; }
+.lname small { color: var(--muted); font-weight: 400; font-size: 12px; }
+.lver { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.lver:first-of-type { border-top: 0; }
+.lplay { flex: 1 1 150px; min-height: 44px; text-align: left; font-size: 15px; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 0 12px; }
+.lck { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.lck input { width: 20px; height: 20px; }
+.lbpm { width: 68px; height: 40px; font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 0 8px; background: var(--bg); color: var(--fg); }
+
+body.stageOn { overflow: hidden; }
+body.stageOn .dock { display: none; }
+#stage { position: fixed; inset: 0; z-index: 60; background: var(--bg); display: flex; flex-direction: column; padding: max(10px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px)); }
+#stage[hidden] { display: none; }
+.st-top { display: flex; align-items: center; gap: 12px; }
+.stbtn { height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: 15px; flex: none; }
+.st-title { flex: 1; min-width: 0; text-align: center; }
+.st-title small { display: block; color: var(--muted); font-size: 13px; letter-spacing: .04em; }
+.st-title h2 { margin: 0; font-size: clamp(26px, 5.4vw, 52px); line-height: 1.05; text-transform: none; letter-spacing: -.01em; color: var(--fg); font-weight: 700; }
+.stver { display: inline-block; margin-top: 4px; font-size: 15px; color: var(--muted); }
+.stver.chk { color: var(--bad); }
+.stpos { flex: none; min-width: 64px; text-align: right; font-family: var(--mono); font-size: 14px; color: var(--muted); }
+.st-prog { height: 5px; background: var(--soft); border-radius: 3px; margin: 8px 0 4px; overflow: hidden; }
+.st-prog span { display: block; height: 100%; width: 0; background: var(--now); transition: width .4s; }
+.st-main { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; }
+.st-note { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.st-count { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: min(46vh, 46vw); font-weight: 800; color: var(--now); opacity: 0; pointer-events: none; transition: opacity .12s; }
+.st-count.show { opacity: .85; }
+.st-info { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 2px 8px; }
+.st-next { font-size: clamp(16px, 2.6vw, 24px); font-weight: 600; padding: 6px 12px; border-radius: 10px; background: var(--soft); min-width: 0; }
+.st-next small { color: var(--muted); font-weight: 500; margin-right: 4px; }
+.st-next span { color: var(--muted); font-weight: 500; font-size: .8em; }
+.st-next.soon { background: var(--now); color: #fff; }
+.st-next.soon small, .st-next.soon span { color: #fff; opacity: .85; }
+.st-bar { font-family: var(--mono); font-size: clamp(15px, 2.4vw, 22px); color: var(--muted); white-space: nowrap; }
+.st-ctl { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(--line); }
+.st-ctl > button { height: 56px; min-width: 56px; padding: 0 16px; font-size: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.st-ctl > button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.stplay { min-width: 130px !important; font-weight: 700; background: var(--fg) !important; color: var(--bg) !important; border-color: var(--fg) !important; }
+.stplay.on { background: var(--now) !important; border-color: var(--now) !important; }
+.st-bpm { display: flex; align-items: center; gap: 6px; }
+.st-bpm button { width: 48px; height: 48px; font-size: 22px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.st-bpm span { min-width: 44px; text-align: center; font: 700 22px var(--mono); }
+.st-bpm small { color: var(--muted); }
+#stFoot .fblock { flex-direction: row; align-items: center; flex-wrap: wrap; }
+#stFoot .seg button { height: 48px; }
+#stFoot .fsel { height: 48px; max-width: 230px; }
+@media (max-height: 520px) { .st-ctl > button { height: 44px; } .st-title h2 { font-size: 24px; } .st-info { padding: 0; } }
+/* notation */
+.rsvg { display: block; max-width: 100%; max-height: 100%; }
+.rsvg .stf { stroke: #16181d; stroke-width: 2; }
+.rsvg .brl { stroke: #16181d; stroke-width: 2.6; }
+.rsvg .hd, .rsvg .ghd { fill: #16181d; }
+.rsvg .st, .rsvg .gst { stroke: #16181d; stroke-width: 2.4; }
+.rsvg .gst { stroke-width: 1.8; }
+.rsvg .gbm { stroke: #16181d; stroke-width: 3.4; }
+.rsvg .bm { fill: #16181d; }
+.rsvg .fl { fill: none; stroke: #16181d; stroke-width: 2.4; }
+.rsvg .stk { font: 700 27px system-ui, sans-serif; text-anchor: middle; }
+.rsvg .gl2 { font: 700 13px system-ui, sans-serif; text-anchor: middle; opacity: .8; }
+.rsvg .acc { font: 700 24px system-ui, sans-serif; text-anchor: middle; fill: #16181d; }
+.rsvg .bnum { font: 600 13px system-ui, sans-serif; fill: #6b7280; }
+.rsvg .bt { font: 500 13px system-ui, sans-serif; fill: #9aa1ad; text-anchor: middle; }
+.rsvg .tup { font: italic 700 19px system-ui, sans-serif; text-anchor: middle; fill: #16181d; }
+.rsvg .bz { stroke: #16181d; stroke-width: 2.4; }
+.rsvg .sus { stroke: #16181d; stroke-width: 2; stroke-dasharray: 2 5; fill: none; }
+.rsvg .bgr { fill: transparent; stroke: transparent; }
+.rsvg .bgr.on { fill: rgba(192, 38, 211, .06); stroke: rgba(192, 38, 211, .4); stroke-width: 1.6; }
+.rsvg .gl { fill: var(--now); opacity: 0; }
+.rsvg .rn.on .gl { opacity: .18; }
+.rsvg .rn.on .hd, .rsvg .rn.on .ghd { fill: var(--now); }
+.rsvg .rn.on .st, .rsvg .rn.on .gst, .rsvg .rn.on .gbm { stroke: var(--now); }
+.rsvg .rn.on .stk, .rsvg .rn.on .gl2, .rsvg .rn.on .acc { fill: var(--now); }
+.rsvg .fk { fill: var(--k); }
+.rsvg .fh { font: 700 26px system-ui, sans-serif; text-anchor: middle; fill: #16181d; }
+.rsvg .fk.off, .rsvg .fh.off { opacity: .15; }
+.rsvg .ft0 { font: 600 11px system-ui, sans-serif; letter-spacing: .08em; fill: #9aa1ad; }
 </style>
 
 <main>
   <div id="nojs" style="border:1px solid #e6e8ec;border-radius:10px;padding:14px;margin-bottom:14px;font-size:15px">This page needs to run in a web browser. If you opened it from Files or a preview, open the link in Safari (or the Claude app) instead.</div>
-  <h1>Sixteenth flow blocks <small style="font-size:11px;color:var(--muted);font-weight:400">v9</small></h1>
+  <h1>Sixteenth flow blocks <small style="font-size:11px;color:var(--muted);font-weight:400">v10</small></h1>
   <div class="tabs" role="tablist" id="tabs">
     <button type="button" role="tab" data-tab="routines">Routines</button>
     <button type="button" role="tab" data-tab="practice">Practice</button>
+    <button type="button" role="tab" data-tab="ritual">Ritual</button>
+    <button type="button" role="tab" data-tab="library">Library</button>
     <button type="button" role="tab" data-tab="sounds">Sounds</button>
     <button type="button" role="tab" data-tab="saved">Saved</button>
     <button type="button" role="tab" data-tab="list">Checklist</button>
@@ -314,6 +406,12 @@ body.focus .nextgrid { opacity: .55; align-items: center; width: 100%; }
     <div class="row" style="margin-top:6px"><span class="lbl">Tempo</span><button class="btn" id="tap" type="button">Tap tempo</button></div>
     </details>
   </section>
+
+  <!-- RITUAL -->
+  <section id="tab-ritual" hidden><div id="ritual"></div></section>
+
+  <!-- LIBRARY -->
+  <section id="tab-library" hidden><div id="library"></div></section>
 
   <!-- SOUNDS -->
   <section id="tab-sounds" hidden>
@@ -1351,5 +1449,597 @@ else shuffle();
 setBpm(PS.bpm); showEv(); statusIdle(); renderSaved(); updateCount();
 setTab(load("sfb-tab-v4", "routines")); renderRoutines(); showRoutine();
 </script>
+<div id="stage" hidden>
+  <div class="st-top">
+    <button type="button" class="stbtn" id="stClose">Close</button>
+    <div class="st-title"><small id="stSec"></small><h2 id="stName"></h2><span id="stVer" class="stver"></span></div>
+    <div class="stpos" id="stPos"></div>
+  </div>
+  <div class="st-prog"><span id="stFill"></span></div>
+  <div class="st-main"><div id="stNote" class="st-note"></div><div id="stCount" class="st-count"></div></div>
+  <div class="st-info"><div id="stNext" class="st-next"></div><div id="stBar" class="st-bar"></div></div>
+  <div class="st-ctl">
+    <button type="button" id="stPrev" aria-label="Previous rudiment">&#9198;</button>
+    <button type="button" id="stPlay" class="stplay">Play</button>
+    <button type="button" id="stNextBtn" aria-label="Next rudiment">&#9197;</button>
+    <button type="button" id="stLoop" aria-pressed="false">Loop</button>
+    <div class="st-bpm"><button type="button" id="stDn" aria-label="Slower">&minus;</button><span id="stBpm"></span><small>BPM</small><button type="button" id="stUp" aria-label="Faster">+</button></div>
+    <div id="stFoot"></div>
+  </div>
+</div>
+<script>
+/* ================= RUDIMENT RITUAL ================= */
+/* Data format (4/4 only). One string per version, tokens separated by spaces:
+   @4 @8 @16 @32 @t4 @t8 @t16  = note unit (ticks per unit), stays until changed
+   R / L            = hit, optional ":n" = n units long, ">" accent, "~" buzz
+   llR / rrL        = drag or ruff (lowercase grace notes before the main note)
+   *R / *L          = flam (one grace, opposite hand)
+   -  or -:n        = rest
+   %  or %2         = repeat the last bar / last two bars (simile)
+   Bars wrap on their own at 10080 ticks. */
+var BL = 10080;
+var UNITS = { "4": 2520, "8": 1260, "16": 630, "32": 315, "t4": 1680, "t8": 840, "t16": 420, "q16": 504, "s16": 360 };
+var TOK = /^([lr]*)(\*?)([RL])([>~]*)(?::(\d+))?([>~]*)$/;
+function oppo(h) { return h === "R" ? "L" : "R"; }
+function compile(str) {
+  var toks = str.trim().split(/\s+/), unit = 630, bt = 0, bar = [], bars = [], ev = [], warn = [], i, k;
+  function pushBar(src) {
+    var b = bars.length, made = [];
+    src.forEach(function (e) { var c = { t: b * BL + e.x, x: e.x, h: e.h, grace: e.grace, acc: e.acc, buzz: e.buzz, dur: e.dur, bar: b }; ev.push(c); made.push(c); });
+    bars.push(made);
+  }
+  toks.forEach(function (tk) {
+    var m;
+    if (tk.charAt(0) === "@") { unit = UNITS[tk.slice(1)] || unit; return; }
+    if (tk.charAt(0) === "%") {
+      if (bt !== 0) warn.push("simile mid-bar at bar " + (bars.length + 1));
+      var n = parseInt(tk.slice(1), 10) || 1, src = [];
+      for (k = bars.length - n; k < bars.length; k++) src.push(bars[k]);
+      src.forEach(function (sb) { pushBar(sb); });
+      return;
+    }
+    if (tk.charAt(0) === "-") {
+      m = /^-(?::(\d+))?$/.exec(tk); bt += (m && m[1] ? +m[1] : 1) * unit;
+      if (bt >= BL) endBarKeep(); return;
+    }
+    m = TOK.exec(tk);
+    if (!m) { warn.push("bad token " + tk); return; }
+    var gr = m[1].toUpperCase().split("").filter(Boolean);
+    if (m[2]) gr = [oppo(m[3])];
+    var flags = m[4] + m[6], dur = (m[5] ? +m[5] : 1) * unit;
+    var e = { x: bt, h: m[3], grace: gr, acc: flags.indexOf(">") >= 0, buzz: flags.indexOf("~") >= 0, dur: dur };
+    bar.push(e); bt += dur;
+    if (bt >= BL) endBarKeep();
+  });
+  function endBarKeep() {
+    if (bt !== BL) warn.push("bar " + (bars.length + 1) + " has " + bt + " of " + BL);
+    pushBar(bar); bar = []; bt = 0;
+  }
+  if (bt !== 0) warn.push("unfinished bar " + (bars.length + 1) + " (" + bt + ")");
+  ev.forEach(function (e, idx) { e.i = idx; });
+  return { events: ev, byBar: bars, bars: bars.length, warn: warn, meter: "4/4" };
+}
+/* helpers that write the data string for repeating stickings */
+function cyc(s, u, nb, o) {
+  o = o || {}; var un = UNITS[u.slice(1)], per = Math.round(BL / un) * nb, out = [u], a = o.acc || [], f = o.flam || [], i, k;
+  for (i = 0; i < per; i++) { k = i % s.length; out.push((f.indexOf(k) >= 0 ? "*" : "") + s.charAt(k) + (a.indexOf(k) >= 0 ? ">" : "")); }
+  return out.join(" ");
+}
+function bars8(arr, fl, ac) {
+  var out = ["@8"];
+  arr.forEach(function (s) { s.split("").forEach(function (c, k) { out.push((fl.indexOf(k) >= 0 ? "*" : "") + c + (ac && ac.indexOf(k) >= 0 ? ">" : "")); }); });
+  return out.join(" ");
+}
+var N = function (name, page, vers) { return { name: name, page: page, vers: vers }; };
+var V = function (label, dsl, chk) { return { label: label, dsl: dsl, chk: !!chk }; };
+var CLEAN = false;
+var RITUAL_DATA = [
+  { section: "Rudiments", items: [
+    N("Three-stroke Ruff", 1, [V("Standard", "@4 llR llR llR llR % % % rrL rrL rrL rrL % % %")]),
+    N("Single Drag", 1, [V("Standard", "@8 llR L rrL R llR L rrL R % % %", 1)]),
+    N("Double Drag", 1, [V("Standard", "@t8 llR:3 llR:2 L rrL:3 rrL:2 R % % %", 1)]),
+    N("Single Ratamacue", 1, [V("Standard", "@t8 llR:3 L R L> rrL:3 R L R> % % %", 1)]),
+    N("Double Ratamacue", 1, [V("Standard", "@t8 llR:2 llR L R L> rrL:2 rrL R L R> % % %", 1)]),
+    N("Triple Ratamacue", 1, [V("Standard", "@t8 llR:2 llR:2 llR:2 L:2 R:2 L>:2 rrL:2 rrL:2 rrL:2 R:2 L:2 R>:2 %2", 1)]),
+    N("Drag Paradiddle No. 1", 2, [V("Standard", "@t8 R>:2 llR L R R L>:2 rrL R L L % % %", 1)]),
+    N("Drag Paradiddle No. 2", 2, [V("Standard", "@8 R>:2 llR llR L R R:2 L>:2 rrL rrL R L L:2 %2", 1)]),
+    N("Lesson 25", 2, [V("Standard", "@t8 R llR L> R llR L> R llR L> R llR L> % L rrL R> L rrL R> L rrL R> L rrL R> %", 1)]),
+    N("Flam", 2, [V("Standard", "@4 *R *L *R *L % @t4 *R *L *R *L *R *L %")]),
+    N("Flam Tap", 2, [V("Standard", "@8 *R> R *L> L *R> R *L> L % % %")]),
+    N("Flam Accent", 2, [V("Standard", "@t8 *R> L R *L> R L *R> L R *L> R L % % %")]),
+    N("Flamacue", 3, [V("Standard", "@8 *R L R> L *R:2 R L *L R L> R *L:2 L R %2", 1)]),
+    N("Flam Paradiddle", 3, [V("Standard", "@8 *R L R R *L R L L % % %")]),
+    N("Flamadiddlediddle", 3, [V("Standard", "@t8 *R L R R L L *L R L L R R % % %", 1)]),
+    N("Five-stroke Roll", 3, [V("Standard", "@8 L~:3 L>:1 R~:3 R>:1 % % %", 1)]),
+    N("Seven-stroke Roll", 3, [V("Standard", "@16 R~:6 L>:2 L~:6 R>:2 % % %", 1)]),
+    N("Nine-stroke Roll", 3, [V("Standard", "@8 R~:7 R>:1 L~:7 L>:1 %2", 1)]),
+    N("Ten-stroke Roll", 4, [V("Standard", "@8 R~:6 R>:1 L>:1 L~:6 L>:1 R>:1 %2", 1)]),
+    N("Six-stroke Roll", 4, [V("Standard", "@t8 R> L L R R L> L> R R L L R> % % %", 1)]),
+    N("Seven-stroke Roll", 4, [V("Page 4", "@t8 R~:4 L>:2 L~:4 R>:2 % % %", 1)]),
+    N("Eleven-stroke Roll", 4, [V("Standard", "@8 R~:5 R>:1 L:1 R>:1 L~:5 L>:1 R:1 L>:1 %2", 1)]),
+    N("Thirteen-stroke Roll", 4, [V("Standard", "@4 R~:3 R>:1 L~:3 L>:1 %2", 1)]),
+    N("Fifteen-stroke Roll", 4, [V("Standard", "@16 R~:12 R>:2 L>:2 L~:12 L>:2 R>:2 %2", 1)]),
+    N("Paradiddle", 4, [V("Eighths", "@8 R> L R R L> R L L % % %"), V("Triplets", "@t8 R> L R R> L R L> L R L> R R L> R L L> R L R> R L R> L L %2", 1), V("Sixteenths", cyc("RLRRLRLL", "@16", 1, { acc: [0, 4] }) + " % % %")]),
+    N("Double Paradiddle", 5, [V("Eighths", cyc("RLRLRRLRLRLL", "@8", 3, { acc: [0, 6] }), 1), V("Triplets", cyc("RLRLRRLRLRLL", "@t8", 1, { acc: [0, 6] }) + " % % %")]),
+    N("Long Roll", 5, [V("Eighths", cyc("RRLL", "@8", 1, { acc: [0] }) + " % % %"), V("Triplets", cyc("RRLL", "@t8", 1, { acc: [0] }) + " % % %"), V("Sixteenths", cyc("RRLL", "@16", 1, { acc: [0] }) + " % % %"), V("32nds", cyc("RRLL", "@32", 1, { acc: [0] }) + " % % %")]),
+    N("Single-stroke Roll", 5, [V("Eighths", cyc("RL", "@8", 1, { acc: [0] }) + " % % %"), V("Triplets", cyc("RL", "@t8", 1, { acc: [0] }) + " % % %"), V("Sixteenths", cyc("RL", "@16", 1, { acc: [0] }) + " % % %"), V("32nds", cyc("RL", "@32", 1, { acc: [0] }) + " % % %")])
+  ] },
+  { section: "Swiss Rudiments", items: [
+    N("Tap Flam", 5, [V("Standard", "@8 R *L> L *R> R *L> L *R> % % %", 1)]),
+    N("Pata Fla Fla", 5, [V("Standard", "@8 R> L R *L> R L *R> L % % %", 1), V("Left lead", "@8 *L> R L *R> L R *L> R % % %", 1)]),
+    N("Swiss Army Triplets", 6, [V("Standard", "@t8 *R R L *R R L *R R L *R R L % *L L R *L L R *L L R *L L R %", 1)]),
+    N("Berger 25", 6, [V("Standard", "@t8 R> R R L> L L R> R R L> L L % % %", 1)]),
+    N("Dragadiddle", 6, [V("Standard", "@t8 R> R L R> R L L> L R L> L R % % %", 1)]),
+    N("Flam Roll (Five-stroke)", 6, [V("Standard", "@8 *R~:3 R>:1 *L~:3 L>:1 % % %", 1)]),
+    N("Flam Roll (Nine-stroke)", 6, [V("Standard", "@8 *R~:7 R>:1 *L~:7 L>:1 %2", 1)]),
+    N("Single Windmill", 6, [V("Standard", "@8 *R R L R *L L R L % % %", 1), V("Reverse", "@8 R *L R R L *R L L % % %", 1)]),
+    N("Double Windmill", 7, [V("Standard", "@t8 *R R L R L R *L L R L R L % % %", 1)]),
+    N("Three-stroke Ruff Paradiddle", 7, [V("Standard", "@8 llR L R R rrL R L L % % %", 1)]),
+    N("Reverse Flam Accent No. 1", 7, [V("Standard", "@t8 R L *R> L R *L> R L *R> L R *L> % % %", 1)]),
+    N("Reverse Flam Accent No. 2", 7, [V("Standard", "@t8 R *L> R L *R> L R *L> R L *R> L % % %", 1)]),
+    N("Single Ratamaflam", 8, [V("Standard", "@t8 llR:3 L R *L> rrL:3 R L *R> % % %", 1)]),
+    N("Double Ratamaflam", 8, [V("Standard", "@t8 llR:2 llR L R *L> rrL:2 rrL R L *R> % % %", 1)]),
+    N("Triple Ratamaflam", 8, [V("Standard", "@t8 llR:2 llR:2 llR:2 L:2 R:2 *L>:2 rrL:2 rrL:2 rrL:2 R:2 L:2 *R>:2 %2", 1)]),
+    N("Drag Flam", 8, [V("Standard", "@8 llR *L rrL *R llR *L rrL *R % % %", 1)]),
+    N("Flam Double Paradiddle", 8, [V("Eighths", cyc("RLRLRRLRLRLL", "@8", 3, { flam: [0, 6], acc: [0, 6] }), 1), V("Triplets", cyc("RLRLRRLRLRLL", "@t8", 1, { flam: [0, 6], acc: [0, 6] }) + " % % %", 1)])
+  ] },
+  { section: "Innovations", items: [
+    N("Paradiddlediddle", 9, [V("Triplets", cyc("RLRRLL", "@t8", 1, { acc: [0] }) + " % % %", 1), V("Sixteenths", cyc("RLRRLL", "@16", 3, { acc: [0] }), 1)]),
+    N("Six-stroke Roll", 9, [V("Innovation: triplets", cyc("RLRRLL", "@t8", 1, { acc: [0, 5] }) + " % % %", 1), V("Innovation: 16ths", cyc("RLRRLL", "@16", 3, { acc: [0, 5] }), 1)]),
+    N("Four-stroke Roll", 9, [V("Standard", cyc("RRLLLLRR", "@16", 1, { acc: [0, 4] }) + " % % %", 1)]),
+    N("Tripletdiddle", 9, [V("Standard", "@t8 R L R L L R L R L L -:2 % % %", 1)]),
+    N("Triplet Paradiddle", 9, [V("Standard", "@t8 R> R L R L R L> L R L R L L> L R L R L R> R L R L R %2", 1)]),
+    N("Triplet Flamadiddle", 9, [V("Standard", "@t8 *R L R *L R L *R L R *L R L % % %", 1)]),
+    N("Drag Triplet", 10, [V("Standard", "@t8 R>:2 R L:2 R L>:2 L R:2 L % % %", 1)]),
+    N("Dragadiddle", 10, [V("Innovation", cyc("RRLRLL", "@t8", 1, { acc: [0, 3] }) + " % % %", 1)]),
+    N("Triplet Flamadiddlediddle", 10, [V("Standard", "@t8 *R L R R L L *L R L L R R % % %", 1), V("Variation", "@t8 *R R R *L L L *R R R *L L L % % %", 1)])
+  ] },
+  { section: "Chopbuilders", items: [
+    N("Three-stroke Ruff", 10, [V("Chopbuilder", "@4 rlR lrL rlR lrL % % %", 1)]),
+    N("Four-stroke Ruff", 10, [V("Chopbuilder", "@8 lrlR - rlrL - lrlR - rlrL - % % %", 1), V("Chopbuilder triplets", "@t8 lrlR - rlrL - lrlR - rlrL - lrlR - rlrL - %", 1)]),
+    N("Five-stroke Roll", 10, [V("Chopbuilder", cyc("RLRLRLRLRL", "@16", 5, { acc: [4, 9] }), 1)]),
+    N("Six-stroke Roll", 10, [V("Chopbuilder", "@16 R>:2 L>:2 R L R L R>:2 L>:2 R L R L % % %", 1)]),
+    N("Seven-stroke Roll", 11, [V("Chopbuilder", "@16 R L R L R L R>:2 L R L R L R L>:2 % % %", 1)]),
+    N("Eight-stroke Roll", 11, [V("Chopbuilder", cyc("RLRRLLRRLRLLRRLL", "@16", 1, { acc: [0, 1, 9, 10] }) + " % % %", 1)]),
+    N("Flam Dada", 11, [V("Standard", "@t8 *R> R L *L> L R *R> R L *L> L R % % %", 1)]),
+    N("Dada Flam", 11, [V("Standard", "@t8 R R *L> L L *R> R R *L> L L *R> % % %", 1)]),
+    N("Flamflamdiddle", 11, [V("Standard", "@8 *R *L R> R *L *R L> L % % %", 1)]),
+    N("Para Flam Flam", 11, [V("Standard", "@8 R L *R> R L *R> L L % % %", 1)]),
+    N("Flamaflamadiddle", 11, [V("Standard", "@8 *R L *R R *L R *L L % % %", 1)]),
+    N("FlamaFlamaFlamFlam", 12, [V("Standard", bars8(["RLRLRRLR", "LRLLRLRL", "RRLRLRLL", "RLRRLRLL"], [0, 2, 5], [0, 2, 5]), 1)]),
+    N("FlamaFlamFlamdiddle", 12, [V("Standard", bars8(["RLRRLRLL", "RLRRLRLL", "LRLLRLRR", "LRLLRLRR"], [0, 2, 4, 7], [0, 2, 4, 7]), 1)]),
+    N("FlamaFlamFlamFlamFlam", 12, [V("Standard", bars8(["RLRRLLRL", "RLRRLRLL", "RRLLRLRR", "LLRRLRLL"], [0, 2, 4, 6], [0, 2, 4, 6]), 1)]),
+    N("Mamadada", 12, [V("Standard", "@8 *R R *L L *R R *L L % % %", 1)]),
+    N("Gary's Flams", 12, [V("Standard", "@8 *R> *L *R> *L *R> *L *R> *L % % %", 1)]),
+    N("Arvin's Diddles", 12, [V("Standard", "@8 *R> R *L L *R> R *L L % % %", 1)])
+  ] }
+];
+
+/* build the playlist (PDF order) and the library (grouped by rudiment name) */
+var PL = [], LIB = [];
+RITUAL_DATA.forEach(function (sec, si) {
+  sec.items.forEach(function (it) {
+    it.sec = sec.section; it.si = si;
+    it.vers.forEach(function (v) {
+      v.ver = compile(v.dsl); v.key = it.name + "|" + v.label;
+      PL.push({ name: it.name, section: sec.section, label: v.label, page: it.page, chk: v.chk, ver: v.ver, key: v.key, sec: si });
+    });
+    var ex = LIB.filter(function (l) { return l.name === it.name; })[0];
+    if (ex) ex.vers = ex.vers.concat(it.vers); else LIB.push({ name: it.name, page: it.page, si: si, sec: sec.section, vers: it.vers.slice() });
+  });
+});
+var SCORES = [{ id: "three-stroke-ruff", name: "Three-stroke Ruff", versions: [PL[0].ver] }];
+
+/* ---------- foot patterns ---------- */
+var FOOTS = {
+  ritual: { name: "Ritual: K, HH, K&, K, HH, K&", ev: [{ t: 0, f: "K" }, { t: 2520, f: "HH" }, { t: 3780, f: "K" }, { t: 5040, f: "K" }, { t: 7560, f: "HH" }, { t: 8820, f: "K" }] },
+  onethree: { name: "Kick on 1 and 3", ev: [{ t: 0, f: "K" }, { t: 5040, f: "K" }] },
+  four: { name: "Four on the floor", ev: [{ t: 0, f: "K" }, { t: 2520, f: "K" }, { t: 5040, f: "K" }, { t: 7560, f: "K" }] },
+  jazz: { name: "Kick 1 and 3, HH foot 2 and 4", ev: [{ t: 0, f: "K" }, { t: 2520, f: "HH" }, { t: 5040, f: "K" }, { t: 7560, f: "HH" }] },
+  hh: { name: "HH foot on 2 and 4 only", ev: [{ t: 2520, f: "HH" }, { t: 7560, f: "HH" }] },
+  eighths: { name: "HH foot on every beat", ev: [{ t: 0, f: "HH" }, { t: 2520, f: "HH" }, { t: 5040, f: "HH" }, { t: 7560, f: "HH" }] }
+};
+var PDEF2 = { fkOn: 1, fhOn: 1, fp: "ritual", rl: "once" };
+Object.keys(PDEF2).forEach(function (k) { if (PS[k] == null) PS[k] = PDEF2[k]; });
+if (!FOOTS[PS.fp]) PS.fp = "ritual";
+FOOT = { len: BL, ev: FOOTS[PS.fp].ev };
+function setFootPattern(k) {
+  PS.fp = k; saveP(); FOOT.ev = FOOTS[k].ev;
+  if (EP.on) { EP.fi = 0; EP.fbase = Math.ceil(EP.tick / BL) * BL; }
+  footUI();
+}
+
+/* ---------- engine: playlist of entries, foot layer locked to the same tick clock ---------- */
+var RT2 = { pi: 0, loopOne: false, single: false, stage: false };
+function entryBars(en) {
+  var nb = en.ver.bars, l = PS.rl;
+  if (RT2.single) return nb;
+  if (l === "twice") return nb * 2;
+  if (l === "b4") return 4;
+  if (l === "b8") return 8;
+  if (l === "b1") return 1;
+  return nb;
+}
+function evBuild2(en, nBars, clicksOnly) {
+  var out = [], b, i;
+  for (b = 0; b < nBars; b++) {
+    out.push({ t: b * BL, k: 0, b: b % en.ver.bars, last: b === nBars - 1, ba: b });
+    for (i = 0; i < 4; i++) out.push({ t: b * BL + i * TPQ, k: 1, c: i === 0 ? 2 : 1, n: i + 1 });
+    if (!clicksOnly) en.ver.byBar[b % en.ver.bars].forEach(function (e) { out.push({ t: b * BL + e.x, k: 2, e: e, id: e.i }); });
+  }
+  return out.sort(function (a, c) { return a.t - c.t || a.k - c.k; });
+}
+function evPlayHand(e, t) {
+  var spt = 60 / (PS.bpm * TPQ), cap = 0.12 * 60 / PS.bpm, g = e.grace || [];
+  var offs = g.length === 1 ? [0.030] : g.length === 2 ? [0.045, 0.022] : g.length === 3 ? [0.062, 0.040, 0.019] : [];
+  g.forEach(function (ch, i) { graceHit(ch, t - Math.min(offs[i] || 0.03, cap * (1 + i * 0))); });
+  if (e.buzz) buzzHit(t, Math.max(0.03, e.dur * spt), !!e.acc, e.h);
+  else hit(e.h, t, !!e.acc);
+}
+function qpush(time, o) { o.time = time; EP.q.push(o); }
+function setEntry(pi, base, startTick) {
+  var en = PL[pi], nb = entryBars(en);
+  EP.pi = pi; EP.items = evBuild2(en, nb, false); EP.span = nb * BL; EP.ii = 0; EP.base = base; EP.nb = nb;
+}
+function evTick() {
+  var ctx = A.ctx;
+  if (EP.on !== true) return;
+  while (true) {
+    var spt = 60 / (PS.bpm * TPQ);
+    if (EP.ii >= EP.items.length) {
+      var endTick = EP.base + EP.span, endTime = EP.time + (endTick - EP.tick) * spt;
+      if (EP.cin) { EP.cin = false; setEntry(EP.pi, endTick); }
+      else if (RT2.loopOne || RT2.single) setEntry(EP.pi, endTick);
+      else if (EP.pi + 1 < PL.length) setEntry(EP.pi + 1, endTick);
+      else if (RT2.loopAll) setEntry(0, endTick);
+      else { qpush(endTime, { type: "end" }); clearInterval(EP.timer); EP.on = "ending"; return; }
+    }
+    var it = EP.items[EP.ii], ht = EP.base + it.t;
+    if (it.k === 0 && EP.jump != null && !EP.cin) { var j = EP.jump; EP.jump = null; setEntry(j, ht); continue; }
+    var fe = FOOT.ev[EP.fi], ft = EP.fbase + fe.t;
+    var tk = Math.min(ht, ft), when = EP.time + (tk - EP.tick) * spt;
+    if (when > ctx.currentTime + 0.12) break;
+    EP.time = when; EP.tick = tk;
+    if (tk === ft) {
+      if (PS.fo) {
+        if (fe.f === "HH") { if (PS.fhOn) FEET.chick.play(when, 0.9, A.fg); }
+        else if (PS.fkOn) (KICKS[PS.fk] || KICKS.kick).play(when, 0.9, A.fg);
+      }
+      EP.fi++; if (EP.fi >= FOOT.ev.length) { EP.fi = 0; EP.fbase += FOOT.len; }
+    }
+    if (tk === ht) {
+      if (it.k === 1) {
+        clk(when, it.c);
+        if (EP.cin) qpush(when, { type: "count", n: it.n });
+      } else if (it.k === 2) {
+        evPlayHand(it.e, when); qpush(when, { type: "note", id: it.id });
+      } else {
+        var cl = EP.cin;
+        if (it.ba === 0) qpush(when, { type: "entry", pi: EP.pi, cin: cl });
+        qpush(when, { type: "bar", b: it.b, ba: it.ba, nb: EP.nb, last: it.last, cin: cl });
+      }
+      EP.ii++;
+    }
+  }
+}
+function evStart2(pi, opts) {
+  opts = opts || {};
+  if (!ensureCtx()) { stat("No audio", "this browser can't play sound"); return; }
+  if (A.ctx.state !== "running") {
+    var r = A.ctx.resume(), go = function () { if (A.ctx.state === "running") evStart2(pi, opts); else stat("Sound blocked", "tap again, check Control Center mute"); };
+    if (r && r.then) r.then(go, go); else setTimeout(go, 200); return;
+  }
+  if (A.playing) stop();
+  evHalt();
+  RT2.single = !!opts.single; RT2.loopOne = !!opts.loopOne; RT2.loopAll = !!opts.loopAll;
+  EP = { on: true, q: [], tick: 0, time: A.ctx.currentTime + 0.2, fi: 0, fbase: 0, jump: null };
+  EP.pi = pi;
+  var cb = PS.count > 0 ? PS.count : 0;
+  if (cb) { EP.cin = true; EP.items = evBuild2(PL[pi], cb, true); EP.span = cb * BL; EP.ii = 0; EP.base = 0; EP.nb = cb; }
+  else { EP.cin = false; setEntry(pi, 0); }
+  EP.timer = setInterval(evTick, 25);
+  stageSync(); evTick();
+  startRaf();
+}
+function evHalt() {
+  if (EP && EP.timer) clearInterval(EP.timer);
+  EP = { on: false, q: [] };
+}
+function evStop(ended) {
+  if (!EP.on && !ended) return;
+  evHalt(); stopRaf(); stageClear(); stageSync();
+  try { statusIdle(); } catch (e) {}
+  var ep = $("evPlay"); if (ep) { ep.textContent = "Play Three-stroke Ruff + feet"; ep.classList.remove("on"); }
+}
+/* old Sounds-tab button */
+function evStart(score, vi) { RT2.stage = false; evStart2(0, { single: true, loopOne: true }); var ep = $("evPlay"); if (ep) { ep.textContent = "Stop"; ep.classList.add("on"); } }
+function jumpTo(pi) {
+  pi = Math.max(0, Math.min(PL.length - 1, pi));
+  if (EP.on === true && !EP.cin) { EP.jump = pi; $("stNext").innerHTML = "<small>Jumping to</small> " + PL[pi].name; return; }
+  if (EP.on === true) EP.pi = pi;
+  stageRender(pi);
+}
+
+/* ---------- notation ---------- */
+var RN = { VBW: 1000 };
+function lvlOf(d) { return d >= 1680 ? 0 : d >= 840 ? 1 : d >= 360 ? 2 : 3; }
+function svgEl(tag, attrs, inner) {
+  var s = "<" + tag; Object.keys(attrs).forEach(function (k) { s += " " + k + '="' + attrs[k] + '"'; });
+  return s + (inner == null ? "/>" : ">" + inner + "</" + tag + ">");
+}
+function renderVer(ver, o) {
+  o = o || {};
+  var W = RN.VBW, m = 18, maxN = 0, bi;
+  ver.byBar.forEach(function (b) { var n = b.length + b.reduce(function (a, e) { return a + e.grace.length * 0.5; }, 0); if (n > maxN) maxN = n; });
+  var rb = maxN <= 8.5 ? 4 : maxN <= 17 ? 2 : 1;
+  if (ver.bars < rb) rb = ver.bars;
+  if (ver.bars === 3) rb = Math.min(rb, 3);
+  var rows = Math.ceil(ver.bars / rb), RH = 222, bw = (W - 2 * m) / rb, H = rows * RH + 14, out = "", r;
+  var showFoot = o.foot !== false;
+  for (bi = 0; bi < ver.bars; bi++) {
+    var row = Math.floor(bi / rb), col = bi % rb, x0 = m + col * bw, ys = row * RH + 98;
+    var bar = ver.byBar[bi], xs = function (t) { return x0 + 52 + (t / BL) * (bw - 72); };
+    out += svgEl("rect", { id: "bg" + bi, class: "bgr", x: x0 + 2, y: ys - 84, width: bw - 4, height: showFoot ? 196 : 140, rx: 10 });
+    out += svgEl("line", { x1: x0, y1: ys, x2: x0 + bw, y2: ys, class: "stf" });
+    out += svgEl("line", { x1: x0, y1: ys - 22, x2: x0, y2: ys + 22, class: "brl" });
+    if (bi === ver.bars - 1 || col === rb - 1) out += svgEl("line", { x1: x0 + bw, y1: ys - 22, x2: x0 + bw, y2: ys + 22, class: "brl" });
+    out += svgEl("text", { x: x0 + 8, y: ys - 50, class: "bnum" }, String(bi + 1));
+    /* beat ticks and numbers */
+    var bn, bpos;
+    for (bn = 0; bn < 4; bn++) { bpos = xs(bn * TPQ); out += svgEl("text", { x: bpos, y: ys + (showFoot ? 100 : 66), class: "bt" }, String(bn + 1)); }
+    var items = bar.map(function (e, n) { return { e: e, n: n, x: xs(e.x), lv: lvlOf(e.dur) }; });
+    var topY = ys - 46, g = "";
+    /* beams */
+    var beams = "", runs = [], cur = null;
+    items.forEach(function (it, n) {
+      var prev = items[n - 1];
+      var sameBeat = prev && Math.floor(prev.e.x / TPQ) === Math.floor(it.e.x / TPQ) && prev.e.x + prev.e.dur === it.e.x;
+      if (it.lv >= 1 && sameBeat && prev.lv >= 1 && cur) cur.push(it);
+      else { cur = it.lv >= 1 ? [it] : null; if (cur) runs.push(cur); }
+    });
+    runs.forEach(function (run) {
+      var lv;
+      for (lv = 1; lv <= 3; lv++) {
+        var seg = [];
+        run.concat([{ lv: -1 }]).forEach(function (it) {
+          if (it.lv >= lv) seg.push(it);
+          else if (seg.length) {
+            var yb = topY + (lv - 1) * 9;
+            if (seg.length > 1) beams += svgEl("rect", { x: seg[0].x + 7, y: yb, width: seg[seg.length - 1].x - seg[0].x, height: 5, class: "bm" });
+            else if (run.length > 1) { var sx = seg[0].x + 7, dir = run.indexOf(seg[0]) === run.length - 1 ? -1 : 1; beams += svgEl("rect", { x: dir > 0 ? sx : sx - 14, y: yb, width: 14, height: 5, class: "bm" }); }
+            seg = [];
+          }
+        });
+      }
+    });
+    items.forEach(function (it) {
+      var e = it.e, x = it.x, id = "rn" + e.i, col2 = e.h === "R" ? "var(--r)" : "var(--l)";
+      var s = "";
+      s += svgEl("rect", { class: "gl", x: x - 22 - e.grace.length * 11, y: ys - 66, width: 44 + e.grace.length * 11, height: 176, rx: 12 });
+      /* stem and head */
+      var stemTop = topY;
+      s += svgEl("line", { x1: x + 7, y1: ys - 2, x2: x + 7, y2: stemTop, class: "st" });
+      s += svgEl("ellipse", { cx: x, cy: ys, rx: 9, ry: 6.5, class: "hd", transform: "rotate(-18 " + x + " " + ys + ")" });
+      if (it.lv >= 1) {
+        var inRun = runs.some(function (r) { return r.length > 1 && r.indexOf(it) >= 0; });
+        if (!inRun) s += svgEl("path", { d: "M" + (x + 7) + " " + stemTop + " q 14 8 8 24", class: "fl" });
+      }
+      if (e.acc) s += svgEl("text", { x: x, y: stemTop - 12, class: "acc" }, "&gt;");
+      if (e.buzz) {
+        var z; for (z = 0; z < 3; z++) s += svgEl("line", { x1: x + 1, y1: ys - 18 - z * 8, x2: x + 14, y2: ys - 25 - z * 8, class: "bz" });
+        var ex = Math.min(x0 + bw - 8, xs(e.x + e.dur) - 8);
+        s += svgEl("path", { d: "M" + (x + 14) + " " + (ys + 4) + " L " + ex + " " + (ys + 4), class: "sus" });
+      }
+      /* graces */
+      var gn = e.grace.length;
+      e.grace.forEach(function (gh, gi) {
+        var gx = x - 14 - (gn - 1 - gi) * 13;
+        s += svgEl("line", { x1: gx + 4, y1: ys - 2, x2: gx + 4, y2: ys - 30, class: "gst" });
+        s += svgEl("ellipse", { cx: gx, cy: ys, rx: 5.5, ry: 4, class: "ghd", transform: "rotate(-18 " + gx + " " + ys + ")" });
+        s += svgEl("text", { x: gx, y: ys + 40, class: "gl2", fill: gh === "R" ? "var(--r)" : "var(--l)" }, gh);
+        if (gi === gn - 1 && gn === 1) s += svgEl("line", { x1: gx - 2, y1: ys - 10, x2: gx + 9, y2: ys - 24, class: "gst" });
+      });
+      if (gn > 1) s += svgEl("line", { x1: x - 14 - (gn - 1) * 13 + 4, y1: ys - 30, x2: x - 10, y2: ys - 30, class: "gbm" });
+      s += svgEl("text", { x: x, y: ys + 44, class: "stk", fill: col2 }, e.h);
+      out += svgEl("g", { id: id, class: "rn" }, s);
+    });
+    out += beams;
+    /* tuplet numbers */
+    for (bn = 0; bn < 4; bn++) {
+      var inb = bar.filter(function (e) { return e.x >= bn * TPQ && e.x < (bn + 1) * TPQ; }), tl = "";
+      if (inb.some(function (e) { return e.dur === 840; })) tl = "3"; else if (inb.some(function (e) { return e.dur === 420; })) tl = "6";
+      if (tl) out += svgEl("text", { x: xs(bn * TPQ + 1250), y: topY - 26, class: "tup" }, tl);
+    }
+    bar.forEach(function (e) { if (e.dur === 1680) out += svgEl("text", { x: xs(e.x), y: topY - 26, class: "tup" }, "3"); });
+    /* feet */
+    if (showFoot) {
+      var fy = ys + 78;
+      out += svgEl("text", { x: x0 + 8, y: fy - 22, class: "ft0" }, "FEET");
+      FOOT.ev.forEach(function (f) {
+        var fx = xs(f.t), on = f.f === "K" ? PS.fkOn : PS.fhOn;
+        if (f.f === "K") out += svgEl("rect", { x: fx - 8, y: fy - 9, width: 16, height: 16, rx: 3, class: "fk" + (on ? "" : " off") });
+        else out += svgEl("text", { x: fx, y: fy + 8, class: "fh" + (on ? "" : " off") }, "×");
+      });
+    }
+  }
+  return { svg: '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="xMidYMid meet" class="rsvg">' + out + "</svg>", rows: rows };
+}
+function drawVersion(en, mount, o) { mount.innerHTML = renderVer(en.ver, o || {}).svg; }
+
+/* ---------- player stage (the "video" screen) ---------- */
+var SG = { raf: 0, hl: null, bar: null };
+function stageEl() { return $("stage"); }
+function stageOpen(pi) { RT2.stage = true; $("stage").hidden = false; document.body.classList.add("stageOn"); stageRender(pi); footUI(); }
+function stageClose() { evStop(); RT2.stage = false; $("stage").hidden = true; document.body.classList.remove("stageOn"); }
+function stageRender(pi) {
+  var en = PL[pi]; if (!en) return;
+  RT2.pi = pi; SG.hl = null; SG.bar = null;
+  $("stSec").textContent = en.section + " · page " + en.page;
+  $("stName").textContent = en.name;
+  $("stVer").textContent = en.label + (en.chk ? " · check vs page" : "");
+  $("stVer").className = "stver" + (en.chk ? " chk" : "");
+  $("stPos").textContent = RT2.single ? "" : (pi + 1) + " / " + PL.length;
+  $("stFill").style.width = (RT2.single ? 0 : (pi / (PL.length - 1)) * 100) + "%";
+  drawVersion(en, $("stNote"), { foot: true });
+  var nx = PL[pi + 1];
+  $("stNext").innerHTML = RT2.single || !nx ? (RT2.single ? "Looping this one" : "Last one") : "<small>Next</small> " + nx.name + (nx.label !== "Standard" ? ' <span>' + nx.label + "</span>" : "");
+  $("stNext").classList.remove("soon");
+  $("stBar").textContent = "";
+  fitStage();
+}
+function fitStage() {
+  var s = $("stNote").firstChild; if (!s) return;
+  var box = $("stNote"), vb = s.viewBox.baseVal, ar = vb.width / vb.height, bw = box.clientWidth, bh = box.clientHeight;
+  var w = Math.min(bw, bh * ar); s.style.width = w + "px"; s.style.height = (w / ar) + "px";
+}
+window.addEventListener("resize", function () { if (RT2.stage) fitStage(); });
+function stageClear() {
+  if (SG.hl) { var e = $("rn" + SG.hl); if (e) e.classList.remove("on"); SG.hl = null; }
+  if (SG.bar != null) { var b = $("bg" + SG.bar); if (b) b.classList.remove("on"); SG.bar = null; }
+  $("stCount").textContent = ""; $("stCount").classList.remove("show");
+}
+function stageSync() {
+  var on = EP.on === true || EP.on === "ending";
+  $("stPlay").textContent = on ? "Stop" : "Play"; $("stPlay").classList.toggle("on", on);
+  $("stLoop").setAttribute("aria-pressed", String(!!RT2.loopOne));
+}
+function apply(q) {
+  if (q.type === "note") {
+    if (SG.hl != null) { var p = $("rn" + SG.hl); if (p) p.classList.remove("on"); }
+    SG.hl = q.id; var e = $("rn" + q.id); if (e) e.classList.add("on");
+  } else if (q.type === "bar") {
+    if (SG.bar != null) { var pb = $("bg" + SG.bar); if (pb) pb.classList.remove("on"); }
+    SG.bar = q.b; var bb = $("bg" + q.b); if (bb) bb.classList.add("on");
+    if (q.cin) $("stBar").textContent = "Count-in";
+    else { var vb = PL[RT2.pi].ver.bars, np = Math.ceil(q.nb / vb); $("stBar").textContent = "Bar " + (q.b + 1) + " of " + vb + (np > 1 ? " · pass " + (Math.floor(q.ba / vb) + 1) + " of " + np : ""); }
+    if (!q.cin) $("stNext").classList.toggle("soon", !!q.last && !RT2.single && !RT2.loopOne);
+    if (!q.cin) $("stCount").classList.remove("show");
+  } else if (q.type === "entry") {
+    if (q.pi !== RT2.pi || true) { stageRender(q.pi); }
+    if (q.cin) { $("stBar").textContent = "Count-in"; }
+  } else if (q.type === "count") {
+    $("stCount").textContent = String(q.n); $("stCount").classList.add("show");
+  } else if (q.type === "end") {
+    evStop(true); $("stBar").textContent = "Ritual done"; $("stNext").innerHTML = "Done. Nice work.";
+  }
+}
+function rafLoop() {
+  if (!A.ctx) return;
+  var now = A.ctx.currentTime, q = EP.q;
+  while (q && q.length && q[0].time <= now + 0.005) apply(q.shift());
+  SG.raf = requestAnimationFrame(rafLoop);
+}
+function startRaf() { stopRaf(); SG.raf = requestAnimationFrame(rafLoop); }
+function stopRaf() { if (SG.raf) cancelAnimationFrame(SG.raf); SG.raf = 0; }
+
+/* ---------- foot option controls (same controls on the Ritual tab, Library tab and the stage) ---------- */
+function footUI() {
+  Array.prototype.forEach.call(document.querySelectorAll("[data-foot]"), function (b) {
+    var k = b.getAttribute("data-foot");
+    if (k === "k") b.setAttribute("aria-pressed", String(!!PS.fkOn));
+    if (k === "h") b.setAttribute("aria-pressed", String(!!PS.fhOn));
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("select.fsel"), function (s) { s.value = PS.fp; });
+  if (RT2.stage && PL[RT2.pi]) {
+    Array.prototype.forEach.call(document.querySelectorAll("#stNote .fk"), function (e) { e.classList.toggle("off", !PS.fkOn); });
+    Array.prototype.forEach.call(document.querySelectorAll("#stNote .fh"), function (e) { e.classList.toggle("off", !PS.fhOn); });
+  }
+}
+function footBlock() {
+  return '<div class="fblock"><div class="seg"><button type="button" class="word" data-foot="k">Kick</button><button type="button" class="word" data-foot="h">HH foot</button></div>' +
+    '<select class="fsel" aria-label="Foot pattern">' + Object.keys(FOOTS).map(function (k) { return '<option value="' + k + '">' + FOOTS[k].name + "</option>"; }).join("") + "</select></div>";
+}
+document.addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("[data-foot]") : null; if (!b) return;
+  if (b.getAttribute("data-foot") === "k") PS.fkOn = PS.fkOn ? 0 : 1; else PS.fhOn = PS.fhOn ? 0 : 1;
+  if (PS.fo === 0 && (PS.fkOn || PS.fhOn)) PS.fo = 1;
+  saveP(); footUI();
+});
+document.addEventListener("change", function (e) { if (e.target && e.target.classList && e.target.classList.contains("fsel")) setFootPattern(e.target.value); });
+
+/* ---------- Ritual tab and Library tab ---------- */
+var LSAVE = load("rit-lib-v1", {});
+function lsave() { store("rit-lib-v1", LSAVE); }
+function lenSeg() {
+  return '<div class="seg" id="lenSeg"><button type="button" class="word" data-len="once">As written</button><button type="button" class="word" data-len="twice">Twice</button><button type="button" class="word" data-len="b4">4 bars</button><button type="button" class="word" data-len="b8">8 bars</button></div>';
+}
+function lenUI() { Array.prototype.forEach.call(document.querySelectorAll("[data-len]"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-len") === PS.rl)); }); }
+document.addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("[data-len]") : null; if (!b) return;
+  PS.rl = b.getAttribute("data-len"); saveP(); lenUI();
+});
+function renderRitualTab() {
+  var h = '<p class="intro">The whole warm-up, in your page order. One Play button, it moves on by itself. The feet keep going underneath so you hear how each rudiment sits with the kick pattern.</p>';
+  h += '<button type="button" class="bigplay" id="ritGo">Play the full Ritual</button>';
+  h += '<h2>Feet</h2>' + footBlock();
+  h += '<h2>How long each one plays</h2>' + lenSeg();
+  h += '<h2>Jump to a section</h2><div class="seg">' + RITUAL_DATA.map(function (s, i) { return '<button type="button" class="word" data-jsec="' + i + '">' + s.section + "</button>"; }).join("") + "</div>";
+  h += '<h2>All ' + PL.length + ' in order</h2><ol class="plist">' + PL.map(function (en, i) {
+    return '<li><button type="button" class="pl" data-pi="' + i + '"><b>' + en.name + "</b><span>" + en.label + (en.chk ? " · check" : "") + "</span><i>p" + en.page + "</i></button></li>";
+  }).join("") + "</ol>";
+  $("ritual").innerHTML = h; footUI(); lenUI();
+}
+function renderLibTab() {
+  var h = '<p class="intro">One card per rudiment. Pick a version to play it on its own, it loops. Tick it when it is clean and log your best clean tempo.</p>';
+  h += footBlock();
+  RITUAL_DATA.forEach(function (sec, sidx) {
+    h += "<h2>" + sec.section + "</h2>";
+    LIB.filter(function (l) { return l.si === sidx; }).forEach(function (it) {
+      h += '<div class="lcard"><div class="lname">' + it.name + "<small> p" + it.page + "</small></div>";
+      it.vers.forEach(function (v) {
+        var s = LSAVE[v.key] || {}, pi = PL.findIndex(function (x) { return x.key === v.key; });
+        h += '<div class="lver"><button type="button" class="lplay" data-one="' + pi + '">▶ ' + v.label + (v.chk ? " · check" : "") + "</button>" +
+          '<label class="lck"><input type="checkbox" data-ck="' + v.key.replace(/"/g, "&quot;") + '"' + (s.d ? " checked" : "") + '> clean</label>' +
+          '<input class="lbpm" type="number" inputmode="numeric" min="30" max="260" placeholder="BPM" data-bp="' + v.key.replace(/"/g, "&quot;") + '" value="' + (s.b || "") + '"></div>';
+      });
+      h += "</div>";
+    });
+  });
+  $("library").innerHTML = h; footUI();
+}
+document.addEventListener("click", function (e) {
+  var t = e.target.closest ? e.target : null; if (!t) return;
+  var b;
+  if ((b = t.closest("#ritGo"))) { RT2.single = false; RT2.loopOne = false; stageOpen(0); evStart2(0, {}); stageSync(); }
+  else if ((b = t.closest("[data-pi]"))) { var pi = +b.getAttribute("data-pi"); RT2.single = false; RT2.loopOne = false; stageOpen(pi); evStart2(pi, {}); stageSync(); }
+  else if ((b = t.closest("[data-jsec]"))) { var si = +b.getAttribute("data-jsec"), ix = PL.findIndex(function (x) { return x.sec === si; }); RT2.single = false; RT2.loopOne = false; stageOpen(ix); evStart2(ix, {}); stageSync(); }
+  else if ((b = t.closest("[data-one]"))) { var oi = +b.getAttribute("data-one"); RT2.single = true; RT2.loopOne = true; stageOpen(oi); evStart2(oi, { single: true, loopOne: true }); stageSync(); }
+});
+document.addEventListener("change", function (e) {
+  var t = e.target; if (!t || !t.getAttribute) return;
+  var k = t.getAttribute("data-ck"), p = t.getAttribute("data-bp");
+  if (k != null) { LSAVE[k] = LSAVE[k] || {}; LSAVE[k].d = t.checked; lsave(); }
+  if (p != null) { LSAVE[p] = LSAVE[p] || {}; LSAVE[p].b = Number(t.value) || 0; lsave(); }
+});
+/* stage controls */
+$("stClose").addEventListener("click", stageClose);
+$("stPlay").addEventListener("click", function () {
+  if (EP.on) { evStop(); return; }
+  evStart2(RT2.pi, { single: RT2.single, loopOne: RT2.loopOne }); stageSync();
+});
+$("stPrev").addEventListener("click", function () { jumpTo(RT2.pi - 1); });
+$("stNextBtn").addEventListener("click", function () { jumpTo(RT2.pi + 1); });
+$("stLoop").addEventListener("click", function () { RT2.loopOne = !RT2.loopOne; if (EP.on) { } stageSync(); });
+$("stDn").addEventListener("click", function () { setBpm(PS.bpm - 4); $("stBpm").textContent = PS.bpm; });
+$("stUp").addEventListener("click", function () { setBpm(PS.bpm + 4); $("stBpm").textContent = PS.bpm; });
+$("stFoot").innerHTML = footBlock();
+(function () {
+  var o = setBpm; setBpm = function (v) { o(v); if ($("stBpm")) $("stBpm").textContent = PS.bpm; };
+})();
+$("stBpm").textContent = PS.bpm;
+document.addEventListener("keydown", function (e) {
+  if (!RT2.stage) return;
+  if (e.code === "Escape") stageClose();
+  else if (e.code === "ArrowRight") jumpTo(RT2.pi + 1);
+  else if (e.code === "ArrowLeft") jumpTo(RT2.pi - 1);
+  else if (e.code === "Space") { e.preventDefault(); $("stPlay").click(); }
+}, true);
+/* tabs */
+TABS.splice(2, 0, "ritual", "library");
+renderRitualTab(); renderLibTab(); footUI(); lenUI();
+setTab(load("sfb-tab-v4", "routines"));
+
+</script>
+
 
 </body></html>
