@@ -16,6 +16,7 @@
   --r: #1d4ed8;
   --l: #c2410c;
   --k: #15803d;
+  --now: #c026d3; /* playhead: magenta, never used for a limb */
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 body {
@@ -149,9 +150,9 @@ input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent);
 .cell button.L, .lt.L, .blocks .L { color: var(--l); fill: var(--l); }
 .cell button.K, .lt.K, .blocks .K { color: var(--k); fill: var(--k); }
 .nh.R { fill: var(--r); } .nh.L { fill: var(--l); } .nh.K { fill: var(--k); }
-.nh.on { fill: var(--fg) !important; }
-.lt { opacity: .75; } .lt.fi { opacity: 1; } .lt.on { fill: var(--fg) !important; opacity: 1; }
-.cell button.on { background: var(--soft); outline: 2px solid currentColor; }
+.nh.on { fill: var(--now) !important; stroke: var(--now); stroke-width: 7px; paint-order: stroke; }
+.lt { opacity: .75; } .lt.fi { opacity: 1; } .lt.on { fill: var(--now) !important; opacity: 1; font-weight: 800; }
+.cell button.on { background: var(--now); color: #fff !important; outline: 0; transform: scale(1.08); }
 .legend { display: flex; justify-content: center; gap: 14px; font-size: 13px; margin-top: 8px; }
 .legend b { font-family: var(--mono); }
 .legend .R { color: var(--r); } .legend .L { color: var(--l); } .legend .K { color: var(--k); }
@@ -192,12 +193,12 @@ body.inroutine .cardacts { justify-content: center; }
 .upnext span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
 .upnext b { font-family: var(--mono); letter-spacing: .12em; }
 .upnext em { font-style: normal; font-size: 12px; color: var(--muted); }
-#grid > svg { border-radius: 8px; transition: background-color .25s; }
-#grid > svg.cur { background: var(--soft); }
+.curgrid > svg { border-radius: 8px; transition: background-color .25s; }
+.curgrid > svg.cur { background: var(--soft); }
 .upnext.soon { border-top-color: var(--fg); }
 .upnext.soon span { color: var(--fg); }
 .upnext.soon + .nextgrid { opacity: .85; }
-@media (prefers-reduced-motion: reduce) { #grid > svg, .nextgrid { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .curgrid > svg, .nextgrid { transition: none; } }
 .nextgrid { transition: opacity .3s; opacity: .5; display: flex; flex-direction: column; gap: 2px; }
 .nextline { text-align: center; font-family: var(--mono); font-size: 13px; color: var(--muted); margin: 4px 0 0; letter-spacing: .08em; }
 .nextline:empty { display: none; }
@@ -209,19 +210,35 @@ body.focus .cardacts, body.focus .type, body.focus .legend, body.focus #typeMsg,
 body.focus #tab-practice > .hint, body.focus #tab-practice > .pick { display: none !important; }
 body.focus .card { border: 0; padding: 0; }
 body.focus .rbar { padding: 8px 10px; }
-body.focus #grid svg { max-width: none !important; }
 body.focus main { max-width: 900px; }
 body.playing .card { position: sticky; top: 0; z-index: 3; background: var(--bg); }
 body.playing .meta, body.playing .cardacts, body.playing .legend, body.playing .type, body.playing #typeMsg { display: none !important; }
 body.playing .card { padding: 6px 10px; }
 body.focus .card { position: sticky; top: 0; z-index: 3; background: var(--bg); padding: 6px 0; }
-body.focus .upnext, body.focus .nextgrid { display: none !important; }
-body.focus .nextline { display: block; }
+body.focus .nextline { display: none; }
+body.focus #rmapRow { display: none !important; }
+body.focus #grid { margin-top: 4px; align-items: center; }
+.curgrid, .nextwrap { display: flex; flex-direction: column; gap: 2px; }
+body.focus #grid svg { margin: 0 auto; }
+/* last bar before the switch: the next phrase lights up so you see it coming */
+.nextwrap { border-radius: 10px; transition: background-color .25s, box-shadow .25s; }
+.nextwrap:has(.upnext.soon) { background: #eef3ff; box-shadow: inset 0 0 0 2px var(--accent); }
+.nextwrap:has(.upnext.soon) .nextgrid { opacity: 1; }
+.upnext.soon span { color: var(--accent); }
+.upnext.soon span::after { content: " · get ready"; }
+/* full screen, iPad sideways: now on the left, next on the right */
+@media (orientation: landscape) {
+  body.focus #grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+  body.focus #grid .nextwrap { padding: 0 6px 6px; }
+  body.focus #grid .upnext { margin-top: 0; border-top: 0; padding-top: 6px; }
+}
+body.focus .upnext { margin: 8px 0 0; padding-top: 6px; width: 100%; justify-content: center; }
+body.focus .nextgrid { opacity: .55; align-items: center; width: 100%; }
 </style>
 
 <main>
   <div id="nojs" style="border:1px solid #e6e8ec;border-radius:10px;padding:14px;margin-bottom:14px;font-size:15px">This page needs to run in a web browser. If you opened it from Files or a preview, open the link in Safari (or the Claude app) instead.</div>
-  <h1>Sixteenth flow blocks <small style="font-size:11px;color:var(--muted);font-weight:400">v7</small></h1>
+  <h1>Sixteenth flow blocks <small style="font-size:11px;color:var(--muted);font-weight:400">v8</small></h1>
   <div class="tabs" role="tablist" id="tabs">
     <button type="button" role="tab" data-tab="routines">Routines</button>
     <button type="button" role="tab" data-tab="practice">Practice</button>
@@ -573,13 +590,13 @@ function nextCfg() {
   return null;
 }
 function drawGrid() {
-  var nd = need(), html = gridHTML("", nd), nx = nextCfg(), cur = { cell: S.cell, groups: S.groups, sub: S.sub, m: S.m, an: S.an, ab: S.ab };
+  var nd = need(), html = '<div class="curgrid">' + gridHTML("", nd) + '</div>', nx = nextCfg(), cur = { cell: S.cell, groups: S.groups, sub: S.sub, m: S.m, an: S.an, ab: S.ab };
   if (nx) {
     S.cell = nx.cell; S.groups = nx.groups; S.sub = nx.sub; S.m = nx.m; S.an = []; S.ab = nx.m === cur.m ? cur.ab : [];
     var nd2 = need(), o = 0, label = nx.groups.map(function (g) { var x = nx.cell.substr(o, g); o += g; return x; }).join(" ");
     var nh = gridHTML("x", nd2);
     S.cell = cur.cell; S.groups = cur.groups; S.sub = cur.sub; S.m = cur.m; S.an = cur.an; S.ab = cur.ab;
-    html += '<div class="upnext"><span>Up next</span><b>' + label + '</b><em>' + SUBS[nx.sub].short + ' · ' + nx.m + '</em></div><div class="nextgrid">' + nh + '</div>';
+    html += '<div class="nextwrap"><div class="upnext"><span>Up next</span><b>' + label + '</b><em>' + SUBS[nx.sub].short + ' · ' + nx.m + '</em></div><div class="nextgrid">' + nh + '</div></div>';
   }
   $("grid").innerHTML = html;
   var nl = $("nextline");
@@ -627,7 +644,28 @@ function drawBeats() {
     box.appendChild(b);
   })(i);
 }
-function redraw() { drawCell(); drawGrid(); refreshKeep(); }
+function redraw() { drawCell(); drawGrid(); refreshKeep(); fitFocus(); }
+/* Full screen: shrink every staff line so the whole current phrase and the next one fit between the letters and the play bar. */
+function fitFocus() {
+  var svgs = document.querySelectorAll("#grid svg");
+  var on = document.body.classList.contains("focus");
+  Array.prototype.forEach.call(svgs, function (v) { v.style.width = ""; v.style.height = ""; });
+  if (!on || !svgs.length) return;
+  var grid = $("grid"), top = grid.getBoundingClientRect().top, dock = $("dock").offsetHeight;
+  var cur = document.querySelectorAll("#grid .curgrid svg").length, nxt = svgs.length - cur;
+  var lab = document.querySelector("#grid .upnext"), labH = lab ? lab.offsetHeight + 16 : 0;
+  var side = getComputedStyle(grid).display === "grid";
+  var room = window.innerHeight - dock - Math.max(0, top) - 16;
+  var per = side ? Math.min((room) / Math.max(1, cur), (room - labH) / Math.max(1, nxt)) : (room - labH) / Math.max(1, svgs.length);
+  per = Math.max(44, Math.min(170, per - 2));
+  var cw = side ? (grid.clientWidth - 14) / 2 - 12 : grid.clientWidth;
+  Array.prototype.forEach.call(svgs, function (v) {
+    var vb = v.viewBox && v.viewBox.baseVal; if (!vb || !vb.height) return;
+    var w = Math.min(cw, per * vb.width / vb.height);
+    v.style.width = w + "px"; v.style.height = (w * vb.height / vb.width) + "px";
+  });
+}
+window.addEventListener("resize", function () { fitFocus(); });
 
 function setPhrase(p, groups, an, custom) {
   S.cell = p; S.groups = groups; S.an = an || []; S.custom = !!custom;
@@ -1126,6 +1164,7 @@ function setFocus(on) {
     if (!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {});
   } catch (e) {}
   window.scrollTo(0, 0);
+  fitFocus(); setTimeout(fitFocus, 350);
 }
 $("focus").addEventListener("click", function () { setFocus(!document.body.classList.contains("focus")); });
 document.addEventListener("fullscreenchange", function () { if (!document.fullscreenElement && document.body.classList.contains("focus")) setFocus(false); });
