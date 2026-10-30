@@ -741,6 +741,15 @@ function ensureCtx() {
     A.vg = A.ctx.createGain(); A.vg.connect(A.ctx.destination);
     applyVol();
   }
+  /* iPad/iPhone: Web Audio is muted by the silent switch unless the page claims the "playback" audio session. */
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  try {
+    if (!A.unlock) {
+      A.unlock = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=");
+      A.unlock.loop = true; A.unlock.setAttribute("playsinline", "");
+    }
+    var pr = A.unlock.play(); if (pr && pr.catch) pr.catch(function () {});
+  } catch (e) {}
   if (A.ctx.state !== "running") A.ctx.resume();
   return true;
 }
