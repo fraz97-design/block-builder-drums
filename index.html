@@ -1,0 +1,1145 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Sixteenth Flow Blocks</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one narrow column built for the kit. Phrase card, phrase + time pickers, then the staff.
+   Play / tempo / status live in a dock pinned to the bottom so they are always one tap away. */
+:root {
+  --bg: #ffffff;
+  --fg: #16181d;
+  --muted: #6b7280;
+  --line: #e6e8ec;
+  --soft: #f2f4f7;
+  --accent: #1d4ed8;
+  --done: #9aa1ad;
+  --bad: #b42318;
+  --r: #1d4ed8;
+  --l: #c2410c;
+  --k: #15803d;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+body {
+  background: var(--bg); color: var(--fg);
+  font: 16px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding-block: 18px 150px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 480px; margin: 0 auto; min-width: 0; }
+h1 { font-size: 18px; margin: 0; font-weight: 650; }
+h2 { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 22px 0 8px; }
+button { font: inherit; color: var(--fg); cursor: pointer; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.tabs { display: flex; margin: 10px 0 14px; border-bottom: 1px solid var(--line); }
+.tabs button { flex: 1; font-size: 13px !important; min-width: 0; height: 44px; font-size: 14px; color: var(--muted); background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--fg); font-weight: 600; }
+
+/* pickers */
+.row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.lbl { width: 58px; flex: none; font-size: 13px; color: var(--muted); padding-top: 11px; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.seg button { min-width: 40px; height: 40px; padding: 0 10px; font-family: var(--mono); font-size: 14px; background: none; border: 1px solid var(--line); border-radius: 6px; }
+.seg button.word { font-family: inherit; font-size: 14px; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+
+/* phrase card */
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 10px; }
+.cell { display: flex; justify-content: center; flex-wrap: wrap; row-gap: 2px; }
+.cell button {
+  position: relative; width: 34px; height: 54px; padding: 12px 0 0; background: none; border: 0; border-radius: 6px;
+  font-family: var(--mono); font-size: 25px; font-weight: 700;
+}
+.cell button.gs { margin-left: 12px; }
+.cell button:first-child { margin-left: 0; }
+.cell button::before { content: ""; position: absolute; top: 1px; left: 0; right: 0; text-align: center; font-size: 15px; color: var(--accent); }
+.cell button.acc::before { content: ">"; }
+.cell button.on { background: var(--soft); color: var(--accent); }
+.meta { text-align: center; font-size: 13px; color: var(--muted); margin: 6px 0 0; text-wrap: balance; }
+.meta b { color: var(--fg); font-weight: 600; }
+.cardacts { display: flex; gap: 8px; margin-top: 10px; }
+.btn { font-size: 15px; background: none; border: 1px solid var(--line); border-radius: 8px; padding: 0 14px; height: 46px; }
+.btn.primary { flex: 1; background: var(--fg); color: var(--bg); border-color: var(--fg); font-weight: 650; }
+.btn[disabled] { color: var(--muted); cursor: default; }
+.type { display: flex; gap: 8px; margin-top: 8px; }
+.type input { flex: 1; min-width: 0; height: 42px; padding: 0 10px; font-size: 16px; color: var(--fg); background: none; border: 1px solid var(--line); border-radius: 8px; }
+.type .btn { height: 42px; }
+#typeMsg { min-height: 1.2em; }
+#typeMsg.bad { color: var(--bad); }
+
+.beats { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.beats button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: none; font-family: var(--mono); font-size: 14px; }
+.beats button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+/* notation */
+#grid { margin-top: 14px; display: flex; flex-direction: column; gap: 2px; }
+#grid svg { display: block; width: 100%; height: auto; }
+.sl { stroke: var(--muted); stroke-width: 1; }
+.bl { stroke: var(--fg); stroke-width: 1.2; }
+.nh { fill: var(--fg); }
+.nh.on { fill: var(--accent); }
+.st { stroke: var(--fg); stroke-width: 1.4; }
+.bm { fill: var(--fg); }
+.lt { fill: var(--muted); font-family: var(--mono); font-size: 12px; font-weight: 600; text-anchor: middle; }
+.lt.fi { fill: var(--fg); }
+.lt.on { fill: var(--accent); }
+.ac { fill: var(--accent); font-family: var(--mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
+.tu { fill: var(--fg); font-family: var(--mono); font-size: 11px; font-style: italic; font-weight: 700; text-anchor: middle; }
+.tb { stroke: var(--fg); stroke-width: 1; fill: none; }
+.lb { fill: var(--muted); font-family: var(--mono); font-size: 11px; text-anchor: middle; }
+.bn { fill: var(--muted); font-family: var(--mono); font-size: 10px; }
+.ts { fill: var(--fg); font-family: var(--mono); font-size: 19px; font-weight: 700; text-anchor: middle; }
+.pk { stroke: var(--muted); stroke-width: 1; }
+.pk.main { stroke: var(--fg); stroke-width: 2; }
+.pn { fill: var(--muted); font-family: var(--mono); font-size: 10px; text-anchor: middle; }
+.pn.main { fill: var(--fg); font-weight: 700; }
+.hint { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+
+/* playback settings */
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; }
+.stepper button { width: 42px; height: 42px; background: none; border: 0; font-size: 20px; }
+.stepper output { min-width: 34px; text-align: center; font-family: var(--mono); font-size: 15px; font-variant-numeric: tabular-nums; }
+.vol { display: flex; align-items: center; gap: 8px; }
+.vol span { width: 58px; flex: none; font-size: 13px; color: var(--muted); }
+.vol input { flex: 1; min-width: 0; height: 40px; margin: 0; accent-color: var(--fg); }
+
+/* sounds tab */
+.snd { border-bottom: 1px solid var(--line); padding: 12px 0; }
+.snd h3 { font-size: 15px; margin: 0 0 8px; }
+.snd .seg button { min-width: 0; }
+.prev { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.prev .btn { height: 40px; font-size: 14px; }
+
+/* dock */
+.dock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--bg); border-top: 1px solid var(--line);
+  padding-top: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.dock .in { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+.drow { display: flex; gap: 8px; align-items: stretch; }
+.play { flex: 1; height: 56px; font-size: 19px; font-weight: 700; background: var(--fg); color: var(--bg); border: 0; border-radius: 10px; }
+.play.on { background: var(--accent); }
+.bpm { display: flex; align-items: center; gap: 4px; }
+.bpm button { width: 44px; height: 56px; font-size: 22px; background: none; border: 1px solid var(--line); border-radius: 8px; }
+.bpm input { width: 70px; height: 56px; text-align: center; font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--fg); background: none; border: 1px solid var(--line); border-radius: 8px; -moz-appearance: textfield; appearance: textfield; }
+.bpm input::-webkit-outer-spin-button, .bpm input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.status { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); min-height: 18px; }
+#bigstat { font-family: var(--mono); font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; }
+
+/* saved + checklist */
+ul { list-style: none; margin: 0; padding: 0; }
+.saved li { display: flex; align-items: center; gap: 10px; min-height: 54px; border-bottom: 1px solid var(--line); }
+.saved .p { font-family: var(--mono); font-size: 17px; font-weight: 600; letter-spacing: 0.12em; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.saved .m { font-size: 12px; color: var(--muted); max-width: 40%; }
+.saved button { font-size: 13px; color: var(--muted); background: none; border: 0; padding: 12px 4px; }
+.saved button.open { color: var(--fg); font-weight: 600; }
+.empty { font-size: 13px; color: var(--muted); padding: 8px 0; }
+.blocks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; }
+.blocks li { display: flex; align-items: center; gap: 10px; min-height: 48px; border-bottom: 1px solid var(--line); }
+.blocks button { flex: 1; text-align: left; background: none; border: 0; padding: 8px 0; font-family: var(--mono); font-size: 21px; letter-spacing: 0.16em; font-weight: 600; }
+.blocks input:checked + button { color: var(--done); text-decoration: line-through; }
+input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent); flex: none; margin: 0; }
+.listhead { display: flex; align-items: baseline; justify-content: space-between; }
+#count { font-family: var(--mono); font-size: 14px; color: var(--muted); }
+
+/* limb colors: R blue, L orange, K green, used everywhere */
+.cell button.R, .lt.R, .blocks .R { color: var(--r); fill: var(--r); }
+.cell button.L, .lt.L, .blocks .L { color: var(--l); fill: var(--l); }
+.cell button.K, .lt.K, .blocks .K { color: var(--k); fill: var(--k); }
+.nh.R { fill: var(--r); } .nh.L { fill: var(--l); } .nh.K { fill: var(--k); }
+.nh.on { fill: var(--fg) !important; }
+.lt { opacity: .75; } .lt.fi { opacity: 1; } .lt.on { fill: var(--fg) !important; opacity: 1; }
+.cell button.on { background: var(--soft); outline: 2px solid currentColor; }
+.legend { display: flex; justify-content: center; gap: 14px; font-size: 13px; margin-top: 8px; }
+.legend b { font-family: var(--mono); }
+.legend .R { color: var(--r); } .legend .L { color: var(--l); } .legend .K { color: var(--k); }
+h2 .n { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--fg); color: var(--bg); font-size: 11px; margin-right: 6px; letter-spacing: 0; }
+.sechint { font-size: 13px; color: var(--muted); margin: -4px 0 10px; }
+.more { margin-top: 22px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px 8px; }
+.more summary { padding: 14px 0; font-size: 14px; color: var(--muted); cursor: pointer; }
+.more h2 { margin-top: 10px; }
+.blocks.wide { grid-template-columns: 1fr; }
+.blocks.wide button { font-size: 18px; letter-spacing: .1em; }
+
+body.inroutine #shuffle, body.inroutine .type, body.inroutine #typeMsg, body.inroutine .more { display: none; }
+body.inroutine .cardacts { justify-content: center; }
+.intro { font-size: 15px; color: var(--muted); margin: 0 0 6px; text-wrap: pretty; }
+.rcat { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 22px 0 8px; }
+.rcard { display: flex; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 8px; background: none; width: 100%; text-align: left; }
+.rcard:hover { border-color: var(--muted); }
+.rcard .dot { width: 10px; align-self: stretch; border-radius: 6px; flex: none; }
+.rcard .txt { flex: 1; min-width: 0; }
+.rcard strong { display: block; font-size: 16px; }
+.rcard span { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.rcard em { display: block; font-style: normal; font-size: 12px; color: var(--muted); margin-top: 6px; font-family: var(--mono); }
+.rcard .go { font-size: 14px; font-weight: 650; flex: none; }
+.rbar { border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 14px; background: var(--soft); }
+.rtop { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.rtop small { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.rtop strong { font-size: 16px; }
+.rx { background: none; border: 0; color: var(--muted); font-size: 13px; padding: 6px; }
+.rprog { height: 4px; background: var(--line); border-radius: 4px; margin: 10px 0; overflow: hidden; }
+.rprog span { display: block; height: 100%; background: var(--fg); width: 0; transition: width .3s; }
+.rnav { display: flex; align-items: center; gap: 8px; }
+.rnav .btn { height: 42px; }
+.rnav .primary { flex: none; }
+.rnav span { flex: 1; text-align: center; font-family: var(--mono); font-size: 14px; }
+.rtip { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+
+.upnext { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin: 18px 0 2px; padding-top: 12px; border-top: 2px dashed var(--line); }
+.upnext span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.upnext b { font-family: var(--mono); letter-spacing: .12em; }
+.upnext em { font-style: normal; font-size: 12px; color: var(--muted); }
+#grid > svg { border-radius: 8px; transition: background-color .25s; }
+#grid > svg.cur { background: var(--soft); }
+.upnext.soon { border-top-color: var(--fg); }
+.upnext.soon span { color: var(--fg); }
+.upnext.soon + .nextgrid { opacity: .85; }
+@media (prefers-reduced-motion: reduce) { #grid > svg, .nextgrid { transition: none; } }
+.nextgrid { transition: opacity .3s; opacity: .5; display: flex; flex-direction: column; gap: 2px; }
+.nextline { text-align: center; font-family: var(--mono); font-size: 13px; color: var(--muted); margin: 4px 0 0; letter-spacing: .08em; }
+.nextline:empty { display: none; }
+.fbtn { width: 56px; height: 56px; font-size: 22px; background: none; border: 1px solid var(--line); border-radius: 10px; flex: none; }
+.fbtn[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+/* focus: just the sheet, the routine progress and the play bar */
+body.focus h1, body.focus .tabs, body.focus #tab-practice > h2, body.focus #tab-practice > .row, body.focus .more,
+body.focus .cardacts, body.focus .type, body.focus .legend, body.focus #typeMsg, body.focus .meta, body.focus .rtip,
+body.focus #tab-practice > .hint, body.focus #tab-practice > .pick { display: none !important; }
+body.focus .card { border: 0; padding: 0; }
+body.focus .rbar { padding: 8px 10px; }
+body.focus #grid svg { max-width: none !important; }
+body.focus main { max-width: 900px; }
+</style>
+
+<main>
+  <div id="nojs" style="border:1px solid #e6e8ec;border-radius:10px;padding:14px;margin-bottom:14px;font-size:15px">This page needs to run in a web browser. If you opened it from Files or a preview, open the link in Safari (or the Claude app) instead.</div>
+  <h1>Sixteenth flow blocks</h1>
+  <div class="tabs" role="tablist" id="tabs">
+    <button type="button" role="tab" data-tab="routines">Routines</button>
+    <button type="button" role="tab" data-tab="practice">Practice</button>
+    <button type="button" role="tab" data-tab="sounds">Sounds</button>
+    <button type="button" role="tab" data-tab="saved">Saved</button>
+    <button type="button" role="tab" data-tab="list">Checklist</button>
+  </div>
+
+  <!-- ROUTINES -->
+  <section id="tab-routines" hidden>
+    <p class="intro">Pick what you want to work on. Each routine loads the stickings, note value and meter for you, then walks you through them. Hit Play and go.</p>
+    <div id="rlist"></div>
+  </section>
+
+  <!-- PRACTICE -->
+  <section id="tab-practice">
+    <div class="rbar" id="rbar" hidden>
+      <div class="rtop"><div><small id="rcat"></small><strong id="rtitle"></strong></div><button type="button" class="rx" id="rEnd" aria-label="End routine">End</button></div>
+      <div class="rprog"><span id="rfill"></span></div>
+      <div class="rnav">
+        <button type="button" class="btn" id="rPrev">‹ Back</button>
+        <span id="rpos"></span>
+        <button type="button" class="btn primary" id="rNext">Next ›</button>
+      </div>
+      <p class="rtip" id="rtip"></p>
+    </div>
+    <h2 style="margin-top:4px"><span class="n">1</span>Your sticking</h2>
+    <div class="card">
+      <div class="cell" id="cell" aria-label="Phrase. Tap a letter to accent it."></div>
+      <p class="meta" id="meta"></p>
+      <p class="nextline" id="nextline"></p>
+      <div class="cardacts">
+        <button class="btn primary" id="shuffle" type="button">Shuffle</button>
+        <button class="btn" id="keep" type="button">Save</button>
+      </div>
+      <div class="type">
+        <input id="typed" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Your sticking, e.g. RLRR LRLL" aria-label="Type your own phrase">
+        <button class="btn" id="useTyped" type="button">Use</button>
+      </div>
+      <div class="legend"><span class="R"><b>R</b> right hand</span><span class="L"><b>L</b> left hand</span><span class="K"><b>K</b> kick</span></div>
+      <p class="hint" id="typeMsg"></p>
+    </div>
+
+    <h2><span class="n">2</span>Play it as</h2>
+    <div class="row"><span class="lbl">Notes</span><div class="seg sub" id="segS" role="group" aria-label="Subdivision"></div></div>
+    <div class="row"><span class="lbl">Meter</span><div class="seg" id="segM" role="group" aria-label="Meter"></div></div>
+    <div class="row"><span class="lbl">Accent</span><div class="beats" id="beats" role="group" aria-label="Accent beats"></div></div>
+
+    <div id="grid"></div>
+    
+
+    <details class="more">
+      <summary>More options: shuffle settings, count-in, volume</summary>
+    <h2>Random sticking</h2>
+    <div class="row"><span class="lbl">Grouping</span><div class="seg" id="segG" role="group" aria-label="Notes per group"></div></div>
+    <div class="row"><span class="lbl">Phrase</span><div class="seg" id="segB" role="group" aria-label="Groupings per phrase"></div></div>
+    <div class="row"><span class="lbl">Level</span><div class="seg" id="segL" role="group" aria-label="Level"></div></div>
+    <div class="row"><span class="lbl">Limbs</span><div class="seg" id="segH" role="group" aria-label="Limbs"></div></div>
+
+    <h2>Playback</h2>
+    <div class="row"><span class="lbl">Switch</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span class="stepper"><button type="button" id="evDn" aria-label="Fewer">−</button><output id="ev"></output><button type="button" id="evUp" aria-label="More">+</button></span>
+        <div class="seg" id="segU" role="group" aria-label="Switch unit"></div>
+      </div>
+    </div>
+    <div class="row"><span class="lbl">Count-in</span><div class="seg" id="segC" role="group" aria-label="Count-in"></div></div>
+    <div class="row"><span class="lbl">Voice</span><div class="seg" id="segV" role="group" aria-label="Spoken count"></div></div>
+    <label class="vol"><span>Click</span><input id="vClick" type="range" min="0" max="100"></label>
+    <label class="vol"><span>Phrase</span><input id="vPhrase" type="range" min="0" max="100"></label>
+    <label class="vol"><span>Voice</span><input id="vVoice" type="range" min="0" max="100"></label>
+    <div class="row" style="margin-top:6px"><span class="lbl">Tempo</span><button class="btn" id="tap" type="button">Tap tempo</button></div>
+    </details>
+  </section>
+
+  <!-- SOUNDS -->
+  <section id="tab-sounds" hidden>
+    <div class="snd">
+      <h3>Hands (R and L)</h3>
+      <div class="seg" id="sndH" role="group" aria-label="Hand sound"></div>
+      <div class="row" style="margin-top:8px"><span class="lbl">R vs L</span><div class="seg" id="sndSplit" role="group" aria-label="R and L pitch"></div></div>
+      <div class="prev"><button class="btn" type="button" data-prev="R">Hear R</button><button class="btn" type="button" data-prev="L">Hear L</button><button class="btn" type="button" data-prev="RA">Hear accent</button></div>
+    </div>
+    <div class="snd">
+      <h3>Kick (K)</h3>
+      <div class="seg" id="sndK" role="group" aria-label="Kick sound"></div>
+      <div class="prev"><button class="btn" type="button" data-prev="K">Hear K</button></div>
+    </div>
+    <div class="snd">
+      <h3>Click</h3>
+      <div class="seg" id="sndC" role="group" aria-label="Click sound"></div>
+      <div class="prev"><button class="btn" type="button" data-prev="C">Hear click</button></div>
+    </div>
+    <p class="hint">All sounds are made live in the browser, nothing to download. Volumes are on the Practice tab.</p>
+  </section>
+
+  <!-- SAVED -->
+  <section id="tab-saved" hidden><ul class="saved" id="saved"></ul></section>
+
+  <!-- CHECKLIST -->
+  <section id="tab-list" hidden>
+    <div class="listhead"><h2>Every block</h2><span id="count"></span></div>
+    <p class="hint">Tap a block to load it on Practice. Tick the box when it's clean.</p>
+    <div id="list"></div>
+    <button class="btn" id="reset" type="button" style="margin-top:24px">Reset checklist</button>
+  </section>
+</main>
+
+<div class="dock" id="dock">
+  <div class="in">
+    <div class="drow">
+      <button class="play" id="play" type="button">Play</button>
+      <button class="fbtn" id="focus" type="button" aria-pressed="false" aria-label="Full screen sheet">⛶</button>
+      <div class="bpm">
+        <button type="button" id="bpmDn" aria-label="Slower">−</button>
+        <input id="bpm" type="number" inputmode="numeric" min="30" max="260" aria-label="Tempo, quarter note per minute">
+        <button type="button" id="bpmUp" aria-label="Faster">+</button>
+      </div>
+    </div>
+    <div class="status"><span id="bigstat">Ready</span><span id="smallstat"></span></div>
+  </div>
+</div>
+
+<script>
+(function () { var n = document.getElementById("nojs"); if (n) n.parentNode.removeChild(n); })();
+var VOICE = ["SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAADQAAB1gAKioqKioqKjw8PDw8PDw8Tk5OTk5OTk5fX19fX19fcXFxcXFxcXGDg4ODg4ODg5WVlZWVlZWnp6enp6enp7i4uLi4uLi4ysrKysrKytzc3Nzc3Nzc7u7u7u7u7u7/////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQDnwAAAAAAAAdY+Aj+/wAAAAAAAAAAAAAAAAD/81DEABowAshfQhgDa9uCQC34AAIiAAAAOf/9DAAzAADw8PDwwAAAAQHj/6kEf4AHh4eHhgB/////gAAAAAeHh4ekAAAAkDw8/9Sf///////////////////h4eHh6QAAAAQHh4eHpAAAADE4eHn6gAAj/Dw9AZf+//wwAW0FR6eQ//NSxAwdcbqcVZuYAGuBYYEqEDBgG5CqjD5SIUQHCaFhQDCgCaaGtZC9w6SmHvmRCgXmZDDJ41KxES8TZwiCJqappGjoGKdFZuVzQurKx00SZCnTu6KLNdA8jsqmtR9KtdlLQ3qZJNlTBjU1MXP9i//9i7FsPFWAAJ1tyy7Ybxq6ph3/81LEDB2BtsW/2XgCCAQMVq5T0QEdBEJbwlckR3Gh7+cxDLjqTsQGN8XQ4HT2JFWSoPCP/ZcOH+Meb/6zG//1jf/zndPT1j//DOTxUZzD7pR/C8chP25UaXj2inPCpaSNeP4o6s/u+ylBTIPV31Nr5BKmOtE8H4CbqKQQfzPlOKID4//zUMQMHAm2vPbLzOpP8utgMJozsyJHsrdAwAAYEJJZOwmCGLnhkCh1Yg5ygGIrq5T6HnXDVubsZpohaepxWL5Ije3uzke4t/E7kRl+GjHuyMIF7DR+fRcsgfp8FhcGEDCa00/zHczJuOMFVgAb///0qoAKUnYYfutShcWaNEHAq+D/81LEEByBqrkO0I0swMqEkFkfnzLcF+QESQeliti/UIgAJMcRQkuMYQYazoLnzZrTeswx+qxTB3IhPSyWVI4gWFcxLEvZLznIhXpt/ySCEApc9Bo9o3aJAiqyjlDjAktX/6XE4nAgDEC2hFn//+zQACv3u/HrYugIFW0bFAoWVjNM7P/zUsQUHNMm4ZZ4yytCn0NyV0aNAhvYLQ9guMG6pUxMztJgaxB0LzA9GoYqqDVoOix0ztPlOIt3QouLoBDC5ivf5LY6goERziAgLIJh8x/8/p7NVV2dIxKK5SkEG2N1/Zvs3s1kTulS2MRRFWrUBNrS/jGVPaIzNWn25pBRTSeMVpoe//NQxBYbCyrRdsMEXpk9qsxPVic5MUkNmptZdj20TxPE6JrI/rohGC1cNMYVAgTIUGzt98xzBRJ8y/8KNhjShkdQB3UUlMi//6PY1SPM7GgKMjs/X+7Xf3a6a1shkXjGEBhy1Y8KS7YN0LCjI7cyRpIjwcJYShbIZcg81qXyxxaGUv/zUsQeGbHCqNbKUM7UqQmEYpctPJLoUPppKaFUqNGno31zsYWbUKqL0rL19N//8SKwyhCazP6rtOqL/zTXMHZUYgsz/2TYaAp577J9ZG5MeU+tQdBpQG/5N3fYDtIluB3Qq8X2i3vG8uGbQeaj+FxeO6rp/y5S9yG5Ofd7AsoEUizs//NQxC0Zufa5nsGG6oRmdvMtqkHyUl1szdYQXwRkg/Wbvw+H68sIg47CjUEzKgNxkolbBx+Jxg8UJ1L7lwyg224o8qptqdACtS1yTb/gbrLZDmUtAnTz1LaK+zN7fUE20TTTGNUT7QpFOlt6Mo5zrbkQjHOLjYktrWoi9ppob1nXbf/zUsQ7GmG6vb7CUI9MH2HzqDjWs1HE/H/9zz0P8jL8QlBO5NvUks3/j8zZPcVF8lBwq/Nfk1ll8/P7ymE5ZPptf/+BEP8mYEWIkAVztfL1trUqzi07XuWsOJJf7D4wN0oy4vRm9aPihOJzhIHMT91VxMsv91GscPJI4e9XJOlq/y2O//NSxEcaEb7CX09AAkafqGe1ZxUyIq0FQfitg00HFsdXWhF702KQy6NQNI3tY+oAUCwRCQVjQdjsVhMAAoJhLAxCEzAnLplRxijyGtX/AQSCwQBLW/4vBeqJSkFMn/iYKCObohJef+LAqT/AgH6TlZYf/xGjLFggs5osh+lxVn//FgP/81DEVC8a3n5fmngA9Q8yBpjTnUqheKVWwFL///1ahaVN9NuBzl/bVC1MLK3MMVuYf///+xs937ntXx5Wd+3scVuYYrE9mYoNGKDT//////7vf3vu9/e/vfsVcPq4feE+8J94T7/y8+XvTemWeHSw4OiJR4RVTEFNRTMuMTAwVVVV//NSxAwAAANIAcAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU=", "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAADAAABtUALS0tLS0tLS1AQEBAQEBAQFRUVFRUVFRUZ2dnZ2dnZ2dnenp6enp6enqNjY2NjY2NjaCgoKCgoKCgoLOzs7Ozs7OzxsbGxsbGxsbZ2dnZ2dnZ2dns7Ozs7Ozs7P//////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQD6gAAAAAAAAbVGFGvCwAAAAAAAAAAAAAAAAD/81DEABeZppTnQhgCEkQEukZQ4GBgZ3n5zvb+R3d3d3dERP8nd3c//+u+ju7v7uiIiIX//7hwAAABCFXAwAAAAAAQEATB8Hw+JwQGg/xOf+Ud/+D7//l///KAMHwfB8PggCAIAgAwfB8Hw+pzb/2b/b+/3xogNHIfVVjSOKi5JU+4//NSxBYfcl7qX4tYALFU9AwOZPN3KJDducqftZpKfcvfd1SSDa5QYUFimYjImjtcgMTWWTb+mSjB0hjvymqV/75r99e7UmY/+rNzW9ZnU3s2MNFqf1uqjetOu8xOd9Q44TCAgAjtQbLBkB4WMvuyzVf+f/5a8bQ6wFwU1DLudiYwKNf/81LEDhziHsIn2jABTDmLAcrLbttLMYjqWWKlJjvt6z3t3tJ66dxNEI8RH9pv0vpiM2XtfNxsnvtLpI4Kmt157b////4rXp0aNCXkCAIBUyRuV/5//maqZNR5pq3naNN7/9NxQz+pzZ0Ub7bnebl3rnFK4Bd1uiZM1+HKsO/u5Slxgv/zUMQQHZMe1l7DCvEy+0olvH8dMLglOOrlPEoosd1b1KsK4Ji8GhGeqdmBIPCOySCwZiOYgHHRdL52fnAHhBi5xxyFo6Rwr15LVCgM/spU//pJRw4NElFPdrf2qatUVGdGX////87rFxMv//IerKZCDlkqqBbjcaUk22HM6fUTZW3/81LEDh1TIvZewgUvbZbO9mmGB1AMsMC7u6edd+BGXRa3T3Ks3Las3qid+Py+CYuyhgYOATAaBEKkFmHSaSar1F/E88HEWokFmFr4WoOla/6OriTKCdUOk//0Mx5zHBOxS////b06o93X//ujUBOgQ4iwqSoJv3RzdRMsysMyrwIZLv/zUsQOHWH+sBbT0JDC5Bl4ZtaBMDQDA4mpuYiqeLaIL6plNCU7YaZZMgh6WJ2O0c68OFDVC3IcPFiQhphZpWpVJX646NWKFCxURTt/ttv6v//+5NGFlsPiERKLjT//PqqKZChOYp3pb8sq1n+1xxNgkHvBGgCmqZwfqDQLlWCZYABI//NQxA4aIba8VsMKlgiS1ND1tkfYxgpPrOs0VKklzQWD0FY6lYSgbNmOQfvXrRdatcdzHYpnYtszZhbMEhW6P/X/8xTHKURFRguKiQqN8VMgz/huwJjxQRA0tQsCrf6XBQFSINEzobpAIhO2Sz/YZahpgeGGUUtGwifklUKIYYoZaP/zUsQaGRMaxb56Cp+1h2mghEIJA+ayTSGeu2JUlCprY5HFdhptR/lNybBIChjET/pr/uhpw7ZBJ1X/0Zk1+2fPeqK+yebM30S37t9HyleiGYSFkUVbCWpEIl3e77/YeCBNg1ZEIF9IVMeAe6prYml/BaRclZOSCtPlPlWPaHWcluQh//NQxCsZcgbBvnpKmpuu1T3kY5/5WAYDCww5KK+13OlMQRjsxHytbmUoihDUcisg5uJiajSYE450YXap8eog9Fbtxm58FSpWCJdbv////4Hc1URor0P9TVqblN2K3O4Y030H8pa9mmtCIESmIyHmUaaOaaFna2G0UT6/8ddr9LTi5//zUsQ6GhHKxl9YQALQd2OofCN881y8X3TVB5818XzZroSCZYGDTFF6C972vc8n5YWgojIvXCJ1MolqKgA2PQ4NhsPR+NhsIAAAGCF7iaM8C8HYQxWAuhHxeJrCYACAtAs/4GAeFyjif1BfYdtIr/4jigRiAHirKx/5wNBxAcCGHi0V//NSxEcagdaaX5FAALFR//y44sux/bcWvK///7Z6GWCAYAglGjJ4Op/SAx7z5wQITEFNRTMuMTAwqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr/81DEUwAAA0gBwAAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq", "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAADwAACF0AJSUlJSUlNDQ0NDQ0NERERERERFRUVFRUVFRjY2NjY2Njc3Nzc3Nzg4ODg4ODg5KSkpKSkpKioqKioqKxsbGxsbGxwcHBwcHBwdHR0dHR0eDg4ODg4ODw8PDw8PDw////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQDxgAAAAAAAAhdCy31hAAAAAAAAAAAAAAAAAD/81DEABk5dngFQxgAA8DAwMDA3c/RE+u6IiIiIX7u7u6IgAAIiI7uf9cAAERERBAGBgbu7nu5/E///rgAAIDHE4Pg+/4Pg+D4OBjhjg4CAIO//ygIAg7Wf8EAwD4Pg+D4EBAEAQcBwfB98QAgcxOH+CA2uVlVslEBCRAgJC10wgkY//NSxBAd+Va+V4xIAHhY86+IwWhQy6flllQUWgyuJ4lG4rzQzFagDgN24akm5rVCSS6NMn3EBeWPSyLUqrJztKFy3rpqz9wR8aFhcCBoPAVihos4k5qz7aKSRguLCrDwVafZM3PaUUGSxcK4YeK2Io3/9n/RgAgtlIpbAVgsHBWPhSL/81LEDh4KJqllyVgBI1RQVUbimm1AvbdF47wHgeQEQFg1AMOD6UpG4jGrB0b1kpWNjAxNi1iRJYdQ3E19mj1Jia4t3EH0Yvd1TNl8dbrq/+9j4mOHf2y+3OmnXEMNjqB8ihcpZWX6xUoof162EizLPkxL7903fSrbR2MlK227cXI/G//zUMQLG+Eu6l7ZhuqHpEBB0AbR1BeY6VMiTTdZ+EGzDQcOK1fwJUt5NVYPUl85XmiGNvxxYDJ1jGkyYR/8QAIib0OHYsP24KOsFQoHSIBFWNUK1i448gwOfLHuRLTzwVdoDVKg67zpGHZ0iszIFnoBOrAeCAS7t/hzW/u3IKOSUYr/81LEEB3i/r2+0gVs0jkbqQCDDaB29WKCYbqvi13f6xZk6dNW/e6dgK8mp4/apWYhcK1OMO5OWKyaQQQYnJ+1DBsCg5O+3e3T//+Kv+2p7hKgOwUCdIjNB4cKfFcvf+f5Dnkbt+rH/I9CUJ+v//9EO4NUyWqAHXC3kgC19ZSA7RXIvv/zUsQOHMoa0ZabyxKg1MW1q0DEXYyZ76Q4n3idWF5bmb/5qhqGqF7rEBUDiZrRrMI+wZRc1mD8v12ebVeSc5DQTrN9XbDTWov0T6iARcXOYOAo+Imc5yHK3MztIIRg1QYUUeWa/oc/KnlH1haIz/9T9dWAARRMhq5aMOa/U3D4aKe///NQxBAcyrreVsPEvhtzDKF6ujFKfcBOHKdVdN6vgTK62b3hqNy1m/vekb7z74tbP95ILLW99R9RrfJ1j4Lse6EuENTnm0KJxePFOil66lzoUxn6W//1dSHto6P5T79ev5DuocrnOwhR7j/4ECQYDarExFxxoqO3cc5F/m1psOk/Gf/zUsQRGNIG+l7BipLbpis0wpmpv8Emo4IJondp2WWuKedNslDJI6lTeqlUNUo8z0zGILD2srxxCGayU2QrOdzHUUIY5f/lPxpDZAS3/+0Lg0pSXiU7RicDgufFQYJmqoABG3bBM/4x1VpxkselMyreiKWWTWuQ5Nho7U4kkljWOGwN//NQxCMZsvrSVsIEnceVMbQ6jEzIIhqj6tOF3qbSQwU4qwk7FlKUzDtiE2fs+qXYrrDgY9CL+n6IZ7f/Jbbt7f+yOvdJlOZRwMgUWoPHxLw6kHbbkEyyj/m1Hwx0/QqVxTVA7j3arSGXZsLgkT0ibKyNJw75LzksdNIajONrd+3f///zUsQxGkLu2bbBhL+mtpYFVXm48VtTtS3IhZkaiC6L4pSnZwU1jpXKIrdUd9U1Nr0TlyG0fo+jf/sAhVHDAYNrot6HQoADW5Jj1tw9ScCKO6kzaKsaO1CVk8ZD3760sKoeZJkDjD5lS2zZyaXTdT+m18v1//+276KqY2aat1pf2M2k//NSxD4ZsurWVnmE3pqrKo5tfpBakIwFoP9hUEV1Ojvsyv2JX/f/p//SUpwIwMg7Aq0iawMiBSkmtS0D+puApsgbm1aUyxiMZpX+x0DE+BDwyaiWFqGcTlMUDEqpVQpUqsOFqv7RUHYUuJIjytcpYUSQEK13euuakpSqUSjvmwxlKab/81DETRky0rkWwMSeMtiEyOn1V1ZfRmaZ/0ye75HCxR8OqnheAKcdt1Tju3H0Gsm9qVU/4fWUsSld9nYPJtKcuVNxmtrO+SuBJSdM7ku5p/2vRziLmRalvlHBrMqpWQ1Vf/OdWL+Yz2nnsIrpz/s9rfead3W+O///+U8c1vm9X9Hq//NSxF0aGhLCXnmKl+RTyFkchFJuzepyNQXbCBt1pVlAESFWlzQO7tRQNeUWicek+abBJ8QpPQpNCkoPBZGSkTZKWbJVWBVaKYoEq+d8pI7Vv/pzpv//67/7/5P///rv87///4mDZSSWYqiiyFUUxVLKSSgMpJLKVRDhqECmKopSQSD/81DEah+Ixox2wZJRQskllJIooWSDpiqKYklhTFEspJKqAety3XYGEmB0BwHGUjBdmLM66difxXrFP9X/4t1C7MWFdQuz//rFPb1f/i3ULsxYVkxBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NSxGAMMBYYXjDGAKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=", "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAADAAABtUALS0tLS0tLS1AQEBAQEBAQFRUVFRUVFRUZ2dnZ2dnZ2dnenp6enp6enqNjY2NjY2NjaCgoKCgoKCgoLOzs7Ozs7OzxsbGxsbGxsbZ2dnZ2dnZ2dns7Ozs7Ozs7P//////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQDNAAAAAAAAAbVuUO/BwAAAAAAAAAAAAAAAAD/81DEABFQAooHQBgAJAigAFYfxIGBrygPvEAIAmD4Pg+fD5QEAQxA6CAIAgGOIHSgY8EPl36AfB8Hw//lzX/8H+UBAMflw/wfB9///Hg+D+oEFaRGHyCDRt0JutIAuDNurDL5gYc404fzkb/tOaA3XMtiLqiQGBOrlAmWcg9SGGkp//NSxC8l0pKdTZl4AN7FQcZrmM1Ut7mhM0F6hcyuiwWFxjSQoLbWDNiM/bD/7Mu1w8ks8mq9+fa0LNs0w+eVgZhbrvNNe9Pinvl5vOsWg0xSt9U186rS+K7r/vP/x/v//eaR59e+t4jYHBsC1nDCzjg1+f/6VaAU0TJbU9thYbshdvH/81LEDR2iqsZf2jgCqxUEIIhCHgi01A5gTRkIIWAspfllMtUzIQKLUu7SjYkYZiSJKGqG3UdNqPFnVjUGgBHqVCMEzjdxoDwxHmj5oO3pad//mIyPVB9//nrdEVt0utE7KlDW78/nanMjmIpBPLLNAUFQk3ICFYAAADJZU7KBIamH8v/zUMQMGoKqyl7DBPadhAjLCMJ6vASJhkgn1fzrTrAy2aekW/XBIRK3e4SzsOx1Haja9ip21vsOMn4cP1WMHkL6le/dhw7TROOFQwFBVOj4+xZJ+/V3/+YzKHMqmq3/3///////8gg5N//pgBAAuNpW2iQao+OmFRmFBeqnaOBWnVb/81LEFx/6ssY+w8qeFIGEo01QpsLwT4R0WEZbaEcHyKUJRXmmzKiPKiIjHBjacGdHMCfsyo98hI/0MkOhlimmPWrmMfa0yLSDcWKPuJUj3aRVvZ/66EJY7lOeJE//Qzp9/7/r9/9fQcPRQFERcXdBEaZ9NThIgBAA9yyf7iai/tEs1f/zUsQNHNMi4j57DrurGSFkSMM3xfj9TsEwO1Kk91CQRNIS0yLB4sUh4XHCxdxZi48eOHEZ4UuhERk3iMccgv57/fMVNKDR/q01vqfpnFTTzTSJiOYJg5DSZ/812bMe+/munr7b9P9PfmOcairNtX1/xuRq2AmnU99h+/ZAaU6ZALxi//NQxA8ZGbrZfnsKmu+Z5Mh/Rw1HInMHCqlNq0qUiF4tBUTDAWQr96vNdbvonhEqieK358qcrV+0QKR0UqIimT/p0fcVmEKMA4iF9Ibb/77rr7JYuMB0GgiECYNDRlVdYUMVwAMyY+w8I3QxlrJM3CqnKo4pDlBzAyMyoe0WR+/Q6v/zUsQfGGMWyV57BJPHCCtOyFGRCKbZT9sa7hQYgBE/wtWK8vKJMJQ5SsVDiigP/9DajOp2KcCSR/////3/9dPnZNHqVHLepfdkXMrIBVwVyAO8l/o5IhAoWLRR8OBN0Tky2q1Rp1+Oy2zRHC48nEpKCtSNUaSme7I5nS4CUb+OGOQy//NQxDMYYxq9XsGErjmMrUQhis6Eoxf/obV07IwYpzBmMtrLdnUh1//53kZZMuSr57dv11T09XdruOqlBEqTkAuQwIpAaWytbKKMxbtVZ18ZU3J5ojGKWXZUONizqkNSQb2VUoOoPobHOVTrCum3TnmLLazrccZEbdul2fbEMe+WXP/zUsRGGcIKkL9ZWAI53///97On7rclXzV8VX/xKT5hM+HPtNYko6f8jFVaSx4AVOuuzNlOO7byy4RgghwTXKrBJcSkQLPMOsq5SmIsMaUqs9jJXSgqsP8NpPEp8JXD4BVEDOgt50Qp+cRxqWKPSQqAhVoM0FDRukdTJqnceLGzwEOY//NSxFUvCtaOX5h4AJyYbfO8faLSygQRoOCGZYYsGInoV48FzsuWVC4EFnYWNeUUKJI+zbL2uoXpn+tN0//7pXuKv2/YlRCcLuDHC3a73MWT2fQt////////x4e4kZ54mY+Y9J4AIlZYi3Pf+w0fHDHDVoQqeVgSAkB4tXMRJEl8kiT/81DEDhSYfdwDzBgAmMTS575taa16y4mAhR4FQ2VDWsFToiDgNA0sFVhrlQVg0oGvxKsFaj39Z0q788WDsFVnfxEoGv8S1Hi36zpU7/4lnf01TEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV", "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAADAAABtUALS0tLS0tLS1AQEBAQEBAQFRUVFRUVFRUZ2dnZ2dnZ2dnenp6enp6enqNjY2NjY2NjaCgoKCgoKCgoLOzs7Ozs7OzxsbGxsbGxsbZ2dnZ2dnZ2dns7Ozs7Ozs7P//////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQCsgAAAAAAAAbVstMr4wAAAAAAAAAAAAAAAAD/81DEABXwAojNQxgAkCIBonB8PreIAQBAHw+oEOCEEOA8Tg+CAIAgCDuoHz8EATPg+D7/+CAIAgCAJn+AAQBAEATB8HwfB8EAQBB3wQBAEAQBMHwfB8HwQBA5+CAY//+CAIawfdBkKhmEA4bq8JRMrdgN4SsYBYUSoMFYHPHhkgJd//NSxB0hei7GX5iIADb4sHASV4DaHFFcC4AbwF0PsMaLMDUTufTDLwZHHOPnEHIvMGIJXIqi5sXe0qKLB4wVQY2qegxuXWqueP0VOyWamWmqgyCK/PKNFvda0nS3SRtdH2U0/+VKBsCExUJ+35EqQ8quxdi7FrDECSpZJLdxYlUqlUv/81LEDR2xrupf2HgCmZMeyyqO0WqIpWf18rQty1vcwwuM0u4ScByDytaEnDL1r4TiEIVv0onEtq17NTbFr6ajf/EDP/3TNawdPWZDbUeUrre/ArCjYgafuOpqMDpVQYjQq4P/7tnqZUy1ADFAw0ghaVWLchT0qqSmFbuq3cXKtbeTgP/zUMQMG3Ke4jbDxJbQt/7oFuBp1FQ4UhimLPTJziREmn6IJwStkcn5dCSAn0tvT9INuZIj+fTaMbU6I5zs66vsRjzPVhSrnIZaMZ3skrKdLUZ2/Zm/0Rv9puZ3daaEVndXYMhcOn2jyJq/1jiggsIkM3XbuJl8qMsZYgjTObhKxLL/81LEEx5aquIWeYsvNbmAviGIU+enWpi2o1GHIZBC0OVz54vrg5kOc3FmcYgwHrZ7tmP33N11loK6cmMlGv/DK0qCRuTlXrvXbMQQEx4CIIHVCy7f+X6ouyDnnKiXQ9HS+yEqrtgocmiSXrVtn556/ORRlbBZktHzhgDAaYkEsjShqf/zUsQPHTJazLZ5hUsUB1mSsLg4C4o1CEohTCypJtYVlUw3ieUz5mbp7wI00ZVKx6hbkAIQlnv551vH93sIgUqRSporPtybRWfV7iRZVEi1Yzal///0mdHMaznMphIgE/iwL9SdNkkBW+cClwpLdnV5k+mIklaSVJtuKyKU8xK2ub7L//NQxBAZYbLmPnmGq9vUT6ykUqh0ITR1czlkq1KURBhYcPjWnjsJDDAzief/9OYJnwhnW8v1YMZZS1YrBgC0nKBjUA5zv260nLfbXTbQbGyuqzG6K/CMbPElwj3dt7+/p/Zl2hllq5Lh34UAAMo2xCQ0rl/KTbetPeu25AoJbFUc2P/zUsQfGWrKzZZ5hL6S2d2l42ZfPuZBcHcG0iUmbqs1jotipbFE0SJWPUVt+j5f+hmYCS4zBwqoM8ndL/7LNa+qfWt/6d3qqPEmVnYM0tRQuWiIypV/+W+3YZWUyittqC0Rp6hZzLZhhs7x+HWzAiLCE6cKOMAM4Xkny2HU9VcTlzNT//NQxC8ZurbFlsGKty1VZQkc19kliIqKC1jJN5FZv+bKVlLGsYSoahn2o2vp+i0eQruv/1vrFrAzOKwmP9xvmwigVuwLgSbjkZKs24Ebbkhiq62+MQsqpv9QKGDSpE7EWy/P5iLZY5dzDwsUPB6RzmMqGVqGEl3rodhJ/R6PGC2X/v/zUsQ9GcsWwl9YKAJEO0zfcpEujmMcQKx2v87EMPI3PQyI1OpZE//vtUVWBWcPOpnp0v/tQgmqABfccckcRjUjkQKAAoOD/1ZztAVWRSrJ/LqmnHf556d0HflrtIdCinW9eH8r1Q6Z4Tm5vFCh0O0jcusM6khQZF2u14tpDWdvHOfb//NSxEssKwqJv5l4ADMjioTumcoq4VkCPvUt4ihjX7YwrpXq6DiFH38azvOE5SJNeCxq6PDiaZoLa8dvvv+uPfX99+PvWdK+Ayu63zXGNwHsKe33bP///////+87zn/X/3//TVvXGd1tCuCIV///+LYrVRJBhAhBghN4SQJfFgZ+coz/81DEEBdjbkQ1ilAAvxWPM/NiqKv+PBFATCuHn/oPgDQkiwMzv/9RkRHlDUGJD//+znKMjnNNQrb////IiI9MhIUKzSIiPb/////NQYmscRKRI5pChWxERHlFTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV", "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAADgAAB9oAJycnJycnJzg4ODg4ODhJSUlJSUlJWVlZWVlZWWpqampqamp7e3t7e3t7i4uLi4uLi5ycnJycnJycrKysrKysrL29vb29vb3Ozs7Ozs7O3t7e3t7e3u/v7+/v7+//////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQDYgAAAAAAAAfam1g4QgAAAAAAAAAAAAAAAAD/81DEABgy6pJfQRAA1jc2k1hAAA8AAAAAABjGMbfwLgOf+jed//5CEI3nOd//nO/7///I1TnOd6EIQhGpU4cDOd//IQgQAABEhFDgYGeEAwM8hCEIBgYs7oQnU4GBg+f8h//7lg+D75QEDmJwfQmKp5hpd4hnd9trXGiEjm/56T+K//NSxBQe4ucHH49AAqUv4jvfp5SIpS7iCHhQRBcGhZwtYnkBgSwPMNWjCB5mJDT7LRD9xceUpSiMaRL3D3tdQkWtUlkTP//b916TB//8cfH/elH3v/v/wn///EdUmj8Rz/5465lKd7T79JHigRbW9Dv+f/6lvYeIiJl79SAILXJQX3H/81LEDh16UuMf2EAA1QmxE9YJUDEHDptvpDr93t5VcI/a5VxrWIBgqQTJAVZXe6tqRyvtEExsVjzGvKW6ip4SWlB5Y8TU//8z61xU1zXdc3H6jHRfjv15X6WtUmUJcgSj8pix0JA6CoBAQieHS3Bo8drdvyS9qZV2aHedinAkEjcRN//zUMQOHNE66x7emETCxwMsBzigVopjAinKOjQtCNVDPyrKBBaJBoAOXoXS3ChkdbWh2rJFURmSwOMtQlQ4BoclsS05+38DMDhLR9rU8vpnZJg7eb31/HNEBwMRY5vvwGea0VMMd/5UFZ3Zp8AlFq6NhGpxkFWltyjHHjtjBQzvUSX/81LEDx3yytou0kS7MDOmpQhCYskXGZM4CGjN2urcgFJYiIoLzJWXGWkJhxyZQsoqLnhEoMTUixpoYgKxwgRk00DorpqMJ4og6HgxNWvZ5qrXf10UOwc4ZFairv38vOrW7LzJ/26K3SXdiiCRJ27O9fTshBhKgAFN8P/KwMOZNneWHP/zUsQNHTG6xU7BkpW9TXo1DBkok2QDg5MAqKQSaqSNRQtqYqF96w6rNODzYnjYFAuBAbBEGBlNsnRzfZVNCTtC9GrzY7JFsvfuqrw3Y/Pn/rXKpqqZBNlqZv//9J+H7M/dqH//QrEYIBghIzTa9rWbQvwykoAaZC6W0YE2kXGJAO8T//NQxA4aKcrNljvMDxcplUI6Xl8Jh7hNHKsiRdqr1rtNVuNW+Zx89bLoyRkpLsRgtEpJgq0t+V/28mqrzlTky7z6//7VTikq/NYL8Srf6KUm6Z/2/bLn9t8UaCgornBvTf//+XYoKFUAAWSQgwpQLymRIU6TQhcGcSpcxfS9phnUFv/zUsQaGjkieldYMAD8y6GaSM4VcO5d/b5aNGyaVF+f9mmfP9nKbYSIw+bygo2D1Ax5oJGrCKEoEoiKkTukFiKwEomSLIqW4Ku6gEVFA1qoijjIREtkSmTAxVEeAhCmtRVKr+CQSVdYIxO2X8yZkx8WyX47yCBMe993e8HBLQA3mvcS//NQxCcfkvJEA4lYAP/JCyy+x6LnxuqJPLdGLz6k21r0F43bYdtUcYsOOOW6mHi9Y4s9M2tJsHntQ2uUOrpQsuvcUcY5RZWY0nMtY+2os5cPiqjneeqrpatnU8s04EMgHzr/+qqy22y222xOx2yw1CsABszS2zz+7oLY2VCYAY+qwP/zUsQdIOra8l+MWAKDHgfEHBjMpgBgJhuHoPRBq7AJAHggC9LRd9nEKNGURR2mx55o6d7GMP+fcw2s6cKqi3799sZVwx8bI1T//9VH3/nGMJ73n7imb2qHFDRkHP9r1OurnZ1/+xlL1yq6mV/3ZxytkTldru3aqbpLvCC6N/jFnEMI//NSxA8Z8yLnH8koACpcF1xXPp7bqyt3SgQQcWJszGT6kMxTHu7LvMl3Trul1bsn3dfsT/V6ojzu/6es0VYrlczUDggJIOI5WQhSsrlox7GOCuExMccTU5lWTMLCaC48cUhHnUTZaIiH22dshBz5mnv0SHxULYNB8D0FiWdXjdreKJn/81DEHRoSSur9TEACO2Q/LsWIlTSSjxIHM39cFBY4WRB6l2JLRCzOsbs/66zcTUP1U1Jte5rUiP///8xVvzP//X7f81LwhZgdiwxDTOd+ZLga+ZFhZnzqlRR+PxqPvqNhKIwSEhKNExxLEROR2YwovAewLViyPEJRuPXhUBXE/OFM//NSxCkkM3r+X41pI3hqLpkMKJ4SpeGK/k4OSMgfzc0E+YliR+o9qNTVFSi6ZHUv5kT0UCSFgfEZEGo9R81Mf+dIqqlJmpmMkvGqSk/uYkqqj//TPOYGJ01LpiZIJJsXTE8ixkqZKfW3//80Tb//9A2ZVRZV/D1ABxOYcUnMMhSeHFT/81DEDhSCRcDVwRAAepc3qVpv83q2b7Zv///6G9S9Sl9WUpWMZ1KoUSxgIxQFQEBYCAhSgJhKWDolfEU74iPCVx4GlhosWPCWeIzv/+eIzpZMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV", "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAADgAAB9oAJycnJycnJzg4ODg4ODhJSUlJSUlJWVlZWVlZWWpqampqamp7e3t7e3t7i4uLi4uLi5ycnJycnJycrKysrKysrL29vb29vb3Ozs7Ozs7O3t7e3t7e3u/v7+/v7+//////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQDVwAAAAAAAAfamFQlIgAAAAAAAAAAAAAAAAD/81DEABeivp5fQRAA1sd1k3oIAF2AgAAAAxjG7+DwHO/5CN+c/+hCfOf//znOf///qchCEapzkIEAAAQRlIRlOHFugGBneQhCHOehAhGJOBgYGdCAYGLO+QgGBgYscCAJg+D4Pn/UGP//wfUb/v6e2xWySRtJAAAVH/eaQRTRhXrg//NSxBYfWx7uX4koArEAiFKQsBwmNHAGHAHFw8QecSGncilsYWFCiCmFBAjHnMLyjDowgV0IrmTQiVZCOjrenOfpRjP6uRnajbPnD4/MqVclkEIwZe2YSHC9ibyJ/sLi7M1XpPggHHojKdTlKJmxAZ/z//LKioVVt0ltiQVD7tgTQBj/81LEDhzaQv7/2ygCDhUrMpCTETs2+HK1ctmmG0+7KF5wesSTPpO5R2fqTtDPnIJhYtU853EGO5CiBCC4OKjylWcQdJnFh6FQ5VNmVTINDh2KhW/Kt1FTa6W/Q7I7Oz/ZLFZ8ylKpREO/DXzuoGn/1uK1YBEAzCE8BjMUf7svCgJGnf/zUMQQHGHOxjbTCuwzGZgKD39a2YJIb+OuvVPnjQI2Mdzy53DgGiKHEJlo4JyKGOA58vgDjllKOpi2IccHIh31QkOOmxBMBgwPyONehNVi5EaudNDCgkHBcbBsKnGbPundyaZLtcASoYXOppLRZaQEZplFy0S2hu/rdwvI31XHtV7/81LEEx6C3tY2y863IGEmHcXGharZZkWBMAq40+ZFYhgSYVMC9sMaHiHt8m7R20gZOH0tK1eHoqrV1xeROWp5QR1N1kyI1Gpt0N//1OTjqAPOJTjjlMTZW//3VvPMNO0rZ07J/Q1Z8xzy6HPFRQ8Cjc+258AQEcpa3cVkMHk/sQZwj//zUsQPHKK+2jbBhSvWJZTSunboi+HBpeY37cCLDOt3evmH/ZbjXdqBGwhQIyRWKVP/ZgBRzvykyL/9nRlH9jTAoKVtSlL1ZDP//to4DZDUdvtf6o5nQiyO13oJKVW6v/96GFPBDiI+sA1E9oFbd/G1pZaTidks22FD4c8QwLFMRTRY//NQxBIc6sLmXmDNGrGRJJhPbarndkuQ7Ab46kK3E4fVCDwADx2QhDIlUKxZ8KIZdph0XMu/opfFM9z7CqTlzRD5/p/5KiIQfbP92T5zryD09PQMQ8Cyi9gEUCI785is8EM5hNO5TA58BwQUkhx6AKqWg3yhXOY9KXMYglp6F6GrS//zUsQTHJGSuFTL0pgEhhjaEBtj1ljQtOyqdXK3O041KNfuoI7i8ivX21glIUg+UYFeIqQ4ggmDC8pBdsbg2TJRejYKRiaEgBxWTjgUMMytHcLhu2vv/2EF6gpjDy58EBAsLnG/9n+3R9xIiuqBBrJREioGIA1Py6CQj9Z1GTVVJNXm//NQxBYZmeLItlvQFk1a2uR9h1NJIWKtaVCtdovKOAVEwuFACiIcMaJbq/9mnyj+LT2+b9b+f5pataY2ZSxtGipg0qh0pF55tZFbDazrCI1tM7jCYaDQNVHv9T+99YALYem7AWoZTTB50KsgkCx6jb8zsdlEzexqy5wKfk1I5qjoAv/zUsQkGbJ6uZbIyvOJNVlUllC9VVYCcBBAU2Lq9AVkduIxGcIgUilaV83/mzFqUpSloY2j++Vvu6+++qdkvoYrB59rqAOv7nqzeWpXG2/JBgX5IBKWZDDU8iJcqhhvj6eM2RBaS0h+tXhwm1QNSXBJ9M5FSqYuREGas5hBjh1Z02o6//NSxDMZKbaUVtJKiw1pRLLmHygCORxRX7Tk79k/pSKoHj2hoDbCNTn23Hs9RRuu7tuaZ39x+/m/vvyf4jxiAaUjTal1oGFC+J9Aw4kooXbj8H5di2tay7lc7drwJbpsjh2xKzP121qiiCLCgPSlK/t+3/PpyvrUqOT61ef5+Iip//b/81DERBoCKqW/WUAD7o+FpIN5XOY55lbnqoXmpKOPb55ydwrxv1/+n7dzmK1pbUdnAZ/iTjjbbydc/IAARYbqARib4rKbg0beoBDkYoJlNyJkRAIF0klJmJsoCFiaD1sM23k+hFQ7i+wYrdEYla5DhJcahi2q3QnnzLo8zQSCLXF8//NSxFEuKtp9vZp4AFt1RyyzsylCbDeVz1zWlk94/tBrjNXCC26131F2rGNSqaKoXJUOtb9YVsyWm+9b383/z1erG5rhK5lc3bIr4bZ/jef85+c////////+G9hTRZ3lH8CFBtGix///0gmLCUOGQgFgqbAdKoEQOqBCAkOxdAijJIn/81DEDhSwwbwBzBgAMR0JR9CSXlq2tlz01b6q7NAwrCgKsBEGFAUFREMDvDRYOiUqdBoedEv6jwNFQ0IlHiv63CJZ0SqPFf9KniWe/+eK//5FTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV", "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAACgAABdAANTU1NTU1NTU1TExMTExMTExMTGJiYmJiYmJiYmJ5eXl5eXl5eXl5j4+Pj4+Pj4+Pj6ampqampqampqa8vLy8vLy8vLy809PT09PT09PT0+np6enp6enp6en/////////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQDSwAAAAAAAAXQafwLxgAAAAAAAAAAAAAAAAD/81DEABnwOrj3SRgABCAG5d/CELIwuCYr0jFYrFaM+cBAEAQd2g+CBzLg+D4fggGMHAQ+oEDPhj/wQDFYPg/d/SCAYy4Pv3YIAMHwffggGKROD74IAgCAIAMHwfB8PggCAIAgAwfB8H3gAEAQOJE4Ph/BAEG6Qm1Swv0cJLxA08mD//NSxA0bIcLIAZl4ACHUoTCCRopvFrqdky7EUErJmBV1QlU4ZGW6rxEVG3+bya7jCZcOcOLTbxxiwVuGNaG3u0yjyBqiWPFR+9oxM0Pdmg7IllilwZlmtKa19Xvvdb6rqJvE2KfdM4ib/Bn5RYAGgAe38a1likuhyadTZ3QtASE/Uaf/81LEFh9KvtGX2DgBAeRxpdV3K4lLrlSUTZcgNCA3IHOjshyK5U1lRTUQfMYccXsD8CIPABBwCbiMNIiRSKHCAqoaJKdeeiNRquj+KlQ8xQfR1pdXX9e7sUWceqIp9KaUR9/+rXdbMjKw9Cm9u3HVQFmR6irUZmQKkmGPcwABCdOjMP/zUMQOHJsi4ZZ40JtABcUJjjDEOlQDDQCZRSjUUxyGpDU7VO+8tLXnlSzZGKHYhEFksixn6jHvu66arZrTa0/nhj4saDom2wo/N/XV3MNpPRy3Z11fxd9xc/N/XXG3Ovt9d8bzUJoMFJRR9zvziBUklcAtf/2HMowWFRqmesQod6X/81LEEBw65smGwkS9k+nQ21DdlVr7RSWyUpZHIyjjMr2Ucuos3OTVetrf7yWpoZNlhcYCQSKlklZFQ+SonM5HZGaZ2y8v4NKBBOHEoQvFFRiykcqkdVIWyqrSo6oZ+3py01/9Y0CDjIhxV2LmulKUkHKccBFhqnA8wzNNUTXolca4qP/zUsQVH5LmoEbTzr1wmH34i1eg3GgZiwMxYl7bk3WlnsWlrYxjdvJnWN2tvFab1SNnM7adI6Vcfw7mdOqyJGjIpPtsKv8LajxJeqHHo/46RNGwDh0iihkbExU505FQxDmul/X7uu3/7Gov/+s6OjUsn/rn5aVqIKU231ds34HsPE06//NQxAwZqoLmXkmGvybVgRM2hy0Of4kWiclJxHPOVUVM1X9V3RO35Wy84Sf18nO85zYjZngpHNqvsd29rHjosy86qw9WP/KkbAxAmiBQDLAbiYf0gxM1IyDLtdYKBZtFXUNLax/fONWRtzTd3InsMRFDiyZM/lk02IGYTJqejDCCEf/zUsQaGbniuldGQABigpRAKAFAAAQDQ8UXBu/CVCVOiIkIiU96WiJ//ohlc3zfpX/u983CJ/CILi9vf+7nqOA+CBwP58mkTggNf/iAEATeD8oH4f6gQDAgOP9/9/cLh/9bIIhWLQOAh4kpkpHHNE0TkXsYgFuS1d8zNBxIl4x5Ij1R//NQxCkkCrr6X49oAkUV8tHKalJM0MhgdKPwDPGCIjksJaSKSNX3ckTFaKlonDd/6K3Y0YnB+GA/nFf8+XR2GBsYk0YIhsXBtSPtWoxQdFlIr//ml00DZE6arMaCLmJilRRUYqoUO///KNAgOgQVNhENhAnVAf7UIAC4QhMwhkuXPv/zUsQNFLG94ZfBEAB8hUM/6tm/UpZjTGlKyGb/lLp5W//mMgYUoUBKGAmDAQ8FRgKjAaAobBU6DTxEeBUYHBE/W78RX//9Czv3K6zol5aJZ7iVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV", "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAADgAAB9oAJycnJycnJzg4ODg4ODhJSUlJSUlJWVlZWVlZWWpqampqamp7e3t7e3t7i4uLi4uLi5ycnJycnJycrKysrKysrL29vb29vb3Ozs7Ozs7O3t7e3t7e3u/v7+/v7+//////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQDDQAAAAAAAAfazqZ9eAAAAAAAAAAAAAAAAAD/81DEABfIBsW/QBgDAqbbkkgttHQ8f4eHh4ekAAAAAA8PDw9J+AAAB4eHh4YAAAAAB4eHh4YAAAAIDw9/6//9//////4eHh4YAAAAAB4eHh4YAAAAAB4eHh6QAAAAQHh4eXSAAAI8PDw//8QqGEndDrmUA8FwcYuzRfg1KfjNInVV//NSxBUfmi6MK5yAADDIsMND8DagxCaFeSBWpU7ghAGIUZMvB1yADqBqgsDcMyqak2M/GkOQZpFIuF8qEYOeUyfIwcZMLZz7l8vmBqgTxaWVzAzWtZu6ysnRKROacsF8Zdl6X3f9PR6FH/+//5b/2fZ/2//rsXUEYaU1JJANFY6AVkb/81LEDBz50tWf0mACNJtAi4dcWWM2mZllA3sU7ZfN/yTh3daEgt2dCcS0f3vTb/TvvN/pS77Dn9vzS/0mnXvlbr2jM/8zBuW6TdZSlV8EV795weLDg8c3T8zf28sBAIh8EBOXeXHDDn2hjYXv/EBcafv3KDCAYg/CmiQg2EnV3T7wA//zUMQOHaGmsCbL0yBhGQGTomrZEJpwgX807wEmTSRKUpply16T7KFKEfFancXYvAwiFdwOyxeiZoSJHPEhIob3RvFPmviLKS639zjnn1aip5TgMIRUMJDukBM4w0q422xbOoydEK10WAUSP//+Dx6eR///4RrDBmZLRaei7A/rG8H/81LEDBuDKs1ueMUyPAfwtpgF8CUBXLcqZENOl0cgwWCGTMQ8h5knODbA1iCl5PARwephXbOzII1kR6bxnujEilzP/zuRZYcwJKnTYkOeKqQZ2HUyN///IrFmoYrTHJO5XUrux1en/3T///8uWKczMmw/yGOh2VwEASe1wLYG9DMQxP/zUsQUHlMSzK57Cn/BGTiGEy5ckE0xMUIQWKjyPQmgiPgjACvJhEaMHT/OvGz+RZOdlaotUJnfPKH1GOEcpGodimOYysVCjBUSEhx1sv//bbd2ScrsKOzCiMo0p3Ojsz7vu1iO5U9TUYz0XQadRpBUZSqWRVpdx8nsC9j8mBryNoKI//NQxBAckqrVVnpKvp05l/OieVyImkBVmEUSKKTTTSFlVhnCsEUmyUiYIWlApcVGYOnlTl45vy8UjKJOMahTZ85+CmRjsNdjORVSUFcSDyOytm/Zf9OXVs2p84tj2MAnFHoZLswijDP7FBRbiIoGaoCUvkAaXYK4toogecaoLJ9kc//zUsQSGXpuzjZ4xP6cLwRcECqYRYVbHNhwQ5JZVz9PBRIcBAaqyMxMfGjKJmFGrGjQjlIifU6FxTUUZ//YWtZiZnhnVCi1WVXjMTMX7Sf/tp+2urQzveRcK6+xfnBBc5UQZ6pu0D9Idy4UvUMDm0WnM5klrAuINQk2JYFBTAbUiuWa//NQxCIYseq5jsJGjoIY1vZSRjcmcv7Z1mzYcdiBsY6oiMGdM1zumVhrDPmd2C0IDGIzI+kbFaIgI/9/FxURGhIbeRGhW5n97zRUis8pAiUdkkTj34H+o61Cqo8JQX801ilWOMWnrrHZyJCU8kJxMIx0yQErMNleZ8y0X0k8IZA3cf/zUsQ0Gdnmxl7CRrIVJw++rBgI9S2cKsZtV6pRmq///tqAlQpfsxqpT1EgkDQmDuujGK3tI0nrgHoh02boWoRKBDUJS234FWAgsti44qEkaAzbU27j0Z6bElX7ra4b3lVd6tTwLZ4VQV4dWOENcWgkPqGYwG9vI1pANI81JQEBIWXn//NSxEIZwbKFHt4GNP+Vz55ZznzJ7ggSDj5MuMqpL/HmmGXil6FOIrPXNqY9DgWFDxMBJRzWa3bbAZw2OhIu4KVJrRZ/HFtx6XY3ZzuX/nV5O8yyFPR1tf7zB1XcyzGg70H2dcDR7V27Mk5y0ZY0GTCFv+29KLVpDuOqJPtvTsUPrdv/81DEURmJMq5fWDADav//znX0LX73D37aWdp19PtnrWz9VQA6HY41HM7ner3KwkCAv3NwPMBXSEj6CVoy6HEAStMGmsy0wIFAe4z/NrLsBwFgRjccxOs/bSfiEKVDUNtWEqgb4c4KsalssMJ0/+YS4cWAthkK5PQXr20GST52DfFz//NSxF8wIqZ+X5p4ADzLwuSfjc9XsJ8+zm9vTGdWFsOghaFs7WaaHkI9svWG1rf6xTWLfHzjqxwZ6aY1e5qB5Es2WtV69xv4s+rX///////+ke4OQQAYfWBVhIGmwVER7/wQAcuBAw8uHznO7F6VHKAOQB6HSmBbjiLqEdOI/ScnTM//81DEFBgw3fABzxgAlcrmbDErn2a6hMQmMzGoCAmFARJM3WY+lGAiEQNLBUqCtYLRKoGgEDXDWCo8FXFjwNP+VOiU7qfUe4KrDX4NQ7+V6jwi/Wd//Es7+IlMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"];
+
+function load(k, f) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? f : v; } catch (e) { return f; } }
+function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function $(id) { return document.getElementById(id); }
+function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+function lcm(a, b) { return a / gcd(a, b) * b; }
+
+/* ---------- time math ----------
+   Everything runs on ticks: 420 per quarter note (divisible by 1 to 7, and 280 for quarter triplets).
+   The quarter is the pulse (BPM). A subdivision is just how many ticks each note lasts. */
+var TPQ = 2520;
+var METERS = {
+  "2/4": { top: 2, bot: 4, main: [0, 4] },
+  "3/4": { top: 3, bot: 4, main: [0, 4, 8] },
+  "4/4": { top: 4, bot: 4, main: [0, 4, 8, 12] },
+  "5/4": { top: 5, bot: 4, main: [0, 4, 8, 12, 16] },
+  "5/8": { top: 5, bot: 8, main: [0, 4], g: "2+3" },
+  "6/8": { top: 6, bot: 8, main: [0, 6], g: "3+3" },
+  "7/8": { top: 7, bot: 8, main: [0, 4, 8], g: "2+2+3" },
+  "9/8": { top: 9, bot: 8, main: [0, 6, 12], g: "3+3+3" }
+};
+function beatT(m) { return METERS[m].bot === 4 ? TPQ : TPQ / 2; }
+function barT(m) { return METERS[m].top * beatT(m); }
+function mainT(m) { return METERS[m].main.map(function (s) { return s * TPQ / 4; }); }
+
+var SUBS = {
+  q:  { name: "quarter notes",            short: "1/4",    d: 2520, beams: 0 },
+  qt: { name: "quarter-note triplets",    short: "1/4 T",  d: 1680, beams: 0, tup: 3, span: 5040 },
+  e:  { name: "eighth notes",             short: "1/8",    d: 1260, beams: 1 },
+  et: { name: "eighth-note triplets",     short: "1/8 T",  d: 840, beams: 1, tup: 3, span: 2520 },
+  s:  { name: "sixteenth notes",          short: "1/16",   d: 630, beams: 2 },
+  s5: { name: "quintuplets",              short: "5s",     d: 504,  beams: 2, tup: 5, span: 2520 },
+  s6: { name: "sextuplets",               short: "6s",     d: 420,  beams: 2, tup: 6, span: 2520 },
+  s7: { name: "septuplets",               short: "7s",     d: 360,  beams: 2, tup: 7, span: 2520 },
+  beat: { name: "one grouping per beat", short: "Per beat", d: 0, beams: -1 }
+};
+var SUB_ORDER = ["q", "qt", "e", "et", "s", "s5", "s6", "s7", "beat"];
+
+/* ---------- phrase rules ---------- */
+var LEVELS = {
+  1: { name: "Easy",   maxRun: 1, triples: 0, kicks: function (n) { return n >= 8 ? 2 : 1; } },
+  2: { name: "Medium", maxRun: 2, triples: 0, kicks: function (n) { return Math.ceil(n / 3); } },
+  3: { name: "Hard",   maxRun: 3, triples: 1, kicks: function (n) { return Math.ceil(n / 2); } }
+};
+function runsOkLoop(p, cfg) {
+  var n = p.length, s = -1, i;
+  for (i = 0; i < n; i++) if (p.charAt(i) !== p.charAt((i + n - 1) % n)) { s = i; break; }
+  if (s < 0) return false;
+  var q = p.slice(s) + p.slice(0, s), run = 1, tr = 0;
+  for (i = 1; i < q.length; i++) {
+    if (q.charAt(i) === q.charAt(i - 1)) {
+      run++;
+      if (run > cfg.maxRun) return false;
+      if (run === 3 && ++tr > cfg.triples) return false;
+    } else run = 1;
+  }
+  return true;
+}
+function blockOk(b, lv, hands) {
+  var c = { L: 0, R: 0, K: 0 }, n = b.length;
+  for (var i = 0; i < n; i++) c[b.charAt(i)]++;
+  if (n === 2) return b.charAt(0) !== b.charAt(1);
+  if (c.L < 1 || c.R < 1) return false;
+  if (hands) return c.K === 0;
+  return c.K >= 1 && c.K <= LEVELS[lv].kicks(n);
+}
+function dealPhrase(g, blocks, lv, hands, avoid) {
+  var abc = hands ? "LR" : "LRK";
+  for (var t = 0; t < 40000; t++) {
+    var p = "", ok = true;
+    for (var b = 0; b < blocks && ok; b++) {
+      var q = "";
+      for (var i = 0; i < g; i++) q += abc.charAt(Math.floor(Math.random() * abc.length));
+      if (!blockOk(q, lv, hands)) ok = false; else p += q;
+    }
+    if (ok && p !== avoid && runsOkLoop(p, LEVELS[lv])) return p;
+  }
+  return avoid || (hands ? "RL" : "RK");
+}
+
+/* ---------- state ---------- */
+var DEF = { m: "4/4", sub: "s", g: 4, blocks: 2, lv: 2, hands: 0, cell: "", groups: [], ab: [], an: [], custom: false };
+var S = load("sfb-state-v3", null) || {};
+Object.keys(DEF).forEach(function (k) { if (S[k] == null) S[k] = DEF[k]; });
+if (!METERS[S.m]) S.m = "4/4";
+if (!SUBS[S.sub]) S.sub = "s";
+var PS = load("sfb-play-v3", null) || {};
+var PDEF = { bpm: 70, every: 4, unit: "bars", count: 1, voice: 1, click: 50, phrase: 70, vvoice: 80, hs: "snare", split: 1, ks: "kick", cs: "beep" };
+Object.keys(PDEF).forEach(function (k) { if (PS[k] == null) PS[k] = PDEF[k]; });
+var saved = load("sixteenth-saved-v1", []);
+function saveS() { store("sfb-state-v3", S); }
+function saveP() { store("sfb-play-v3", PS); }
+
+/* Each note's start and length in ticks. Uniform note values: every note the same length.
+   "Per beat": each grouping squeezes into one quarter, so 4 = 16ths, 3 = 8th triplets, 5 = quintuplets. */
+function timing(cell, groups, sk) {
+  var sub = SUBS[sk], durs = [], offs = [], t = 0;
+  groups.forEach(function (len) { for (var i = 0; i < len; i++) { var d = sub.d || TPQ / len; durs.push(d); offs.push(t); t += d; } });
+  var map = {}; offs.forEach(function (o, i) { map[o] = i; });
+  return { durs: durs, offs: offs, L: t, n: cell.length, map: map };
+}
+function tStart(tm, k) { return Math.floor(k / tm.n) * tm.L + tm.offs[k % tm.n]; }
+function tStep(tm, bk) { var g = gcd(tm.L, bk); tm.offs.forEach(function (o) { if (o) g = gcd(g, o); }); return g; }
+function cycle() {
+  var tm = timing(S.cell, S.groups, S.sub), bt = barT(S.m), tot = lcm(tm.L, bt), reps = tot / tm.L;
+  return { ticks: tot, notes: reps * tm.n, bars: tot / bt, reps: reps, tm: tm };
+}
+function groupInfo() {
+  var gi = [], gs = [];
+  S.groups.forEach(function (len, j) { for (var i = 0; i < len; i++) { gi.push(j); gs.push(i === 0); } });
+  return { gi: gi, gs: gs, G: S.groups.length };
+}
+function noteAcc(k, cell, tm) {
+  var bt = barT(S.m), bk = beatT(S.m), pos = tStart(tm, k) % bt;
+  if (pos % bk === 0 && S.ab.indexOf(pos / bk + 1) >= 0) return true;
+  return cell === S.cell && S.an.indexOf(k % cell.length) >= 0;
+}
+
+/* ---------- notation: time-proportional so every subdivision lines up with the pulse ---------- */
+function rect(x, y, w, h) { return '<rect class="bm" x="' + x.toFixed(1) + '" y="' + y + '" width="' + Math.max(1, w).toFixed(1) + '" height="' + h + '"/>'; }
+
+function gridHTML(pre, span) {
+  var sub = SUBS[S.sub], mt = METERS[S.m], bt = barT(S.m), bk = beatT(S.m), mts = mainT(S.m);
+  var cell = S.cell, n = cell.length, gi = groupInfo(), cy = cycle(), tm = cy.tm;
+  var MAXB = 64, full = Math.max(cy.bars, span || 0), bars = Math.min(full, MAXB), lastNote = 0;
+  while (tStart(tm, lastNote) < bars * bt) lastNote++;
+  var minD = Math.min.apply(null, tm.durs);
+  function beamsOf(d) { return d <= TPQ / 4 ? 2 : d <= TPQ / 2 ? 1 : 0; }
+  var pxq = Math.max(72, (TPQ / minD) * 17), ppt = pxq / TPQ, barW = bt * ppt;
+  var perRow = Math.max(1, Math.floor(430 / barW)), rows = Math.ceil(bars / perRow), out = "";
+  var ly = [50, 60, 70, 80, 90];
+  function gid(k) { return Math.floor(k / n) * gi.G + gi.gi[k % n]; }
+
+  for (var r = 0; r < rows; r++) {
+    var b0 = r * perRow, b1 = Math.min(bars, b0 + perRow), t0 = b0 * bt, t1 = b1 * bt;
+    var x0 = 62, W = x0 + 8 + (t1 - t0) * ppt + 8;
+    var X = function (t) { return x0 + 8 + (t - t0) * ppt; };
+    var s = '<svg id="' + pre + 'row' + r + '" viewBox="0 0 ' + W.toFixed(0) + ' 146" role="img" aria-label="Bars ' + (b0 + 1) + ' to ' + b1 + '" style="max-width:' + Math.round(W * 1.15) + 'px">';
+    var i, k;
+    for (i = 0; i < 5; i++) s += '<line class="sl" x1="30" x2="' + (W - 4).toFixed(1) + '" y1="' + ly[i] + '" y2="' + ly[i] + '"/>';
+    s += '<line class="bl" x1="30" x2="30" y1="50" y2="90"/><text class="lb" x="12" y="79">A</text><text class="lb" x="12" y="89">F</text>';
+    if (r === 0) s += '<text class="ts" x="46" y="70">' + mt.top + '</text><text class="ts" x="46" y="90">' + mt.bot + '</text>';
+    for (var j = 0; j < b1 - b0; j++) {
+      var bx = X(t0 + j * bt) - 8;
+      s += '<text class="bn" x="' + (j === 0 ? 30 : bx + 2).toFixed(1) + '" y="11">' + (b0 + j + 1) + '</text>';
+      if (j > 0) s += '<line class="bl" x1="' + bx.toFixed(1) + '" x2="' + bx.toFixed(1) + '" y1="50" y2="90"/>';
+    }
+    var ex = X(t1) - 8;
+    s += '<line class="bl" x1="' + ex.toFixed(1) + '" x2="' + ex.toFixed(1) + '" y1="50" y2="90"/>';
+    if (b1 === bars) s += '<rect class="bm" x="' + (ex + 3).toFixed(1) + '" y="50" width="3" height="40"/>';
+
+    /* pulse ruler */
+    for (var tb = t0; tb < t1; tb += bk) {
+      var px = X(tb), isMain = mts.indexOf(tb % bt) >= 0;
+      s += '<line class="pk' + (isMain ? ' main' : '') + '" x1="' + px.toFixed(1) + '" x2="' + px.toFixed(1) + '" y1="' + (isMain ? 120 : 123) + '" y2="130"/>';
+      s += '<text class="pn' + (isMain ? ' main' : '') + '" x="' + px.toFixed(1) + '" y="142">' + ((tb % bt) / bk + 1) + '</text>';
+    }
+
+    /* notes */
+    var ks = [];
+    for (k = 0; k < lastNote; k++) { var st0 = tStart(tm, k); if (st0 >= t0 && st0 < t1) ks.push(k); }
+    ks.forEach(function (k) {
+      var x = X(tStart(tm, k)), ch = cell.charAt(k % n), cyy = ch === "K" ? 85 : 75;
+      s += '<line class="st" x1="' + (x + 5).toFixed(1) + '" x2="' + (x + 5).toFixed(1) + '" y1="' + (cyy - 1) + '" y2="34"/>';
+      s += '<ellipse id="' + pre + 'n' + k + '" class="nh ' + ch + '" cx="' + x.toFixed(1) + '" cy="' + cyy + '" rx="5.6" ry="4" transform="rotate(-20 ' + x.toFixed(1) + ' ' + cyy + ')"/>';
+      s += '<text id="' + pre + 't' + k + '" class="lt ' + ch + (gi.gs[k % n] ? ' fi' : '') + '" x="' + x.toFixed(1) + '" y="110">' + ch + '</text>';
+      if (noteAcc(k, cell, tm)) s += '<text class="ac" x="' + (x + 5).toFixed(1) + '" y="29">&gt;</text>';
+    });
+
+    /* beams by group */
+    i = 0;
+    while (i < ks.length) {
+      var a = i, nb = beamsOf(tm.durs[ks[a] % n]);
+      while (i + 1 < ks.length && gid(ks[i + 1]) === gid(ks[a])) i++;
+      var b = i; i++;
+      var xa = X(tStart(tm, ks[a])) + 5, xb = X(tStart(tm, ks[b])) + 5;
+      var glen = b - a + 1;
+      /* per beat: a grouping of 3, 5, 6, 7 or 9 is a tuplet, so mark it */
+      if (S.sub === "beat" && [3, 5, 6, 7, 9].indexOf(S.groups[gi.gi[ks[a] % n]]) >= 0 && gi.gs[ks[a] % n]) {
+        var gl = S.groups[gi.gi[ks[a] % n]];
+        if (nb === 0) s += '<path class="tb" d="M' + (xa - 2).toFixed(1) + ' 24 V20 H' + (xb + 2).toFixed(1) + ' V24"/>';
+        s += '<text class="tu" x="' + ((xa + xb) / 2).toFixed(1) + '" y="' + (nb ? 22 : 17) + '">' + gl + '</text>';
+      }
+      if (nb) {
+        for (var bm = 0; bm < nb; bm++) {
+          var y = 34 + bm * 5.5;
+          if (a === b) {
+            var first = gi.gs[ks[a] % n];
+            s += rect(first ? xa - 0.7 : xa - 8, y, 8.7, 3);
+          } else s += rect(xa - 0.7, y, xb - xa + 1.4, 3);
+        }
+      }
+    }
+
+    /* tuplet numbers */
+    if (sub.tup) {
+      for (var sp = Math.floor(t0 / sub.span) * sub.span; sp < t1; sp += sub.span) {
+        var xs = X(sp) + 5, xe = X(sp + (sub.tup - 1) * sub.d) + 5, xc = (xs + xe) / 2;
+        if (xc < x0 || xc > W) continue;
+        var ty = sub.beams ? 22 : 24;
+        if (!sub.beams) {
+          s += '<path class="tb" d="M' + (xs - 2).toFixed(1) + ' 24 V20 H' + (xc - 7).toFixed(1) + ' M' + (xc + 7).toFixed(1) + ' 20 H' + (xe + 2).toFixed(1) + ' V24"/>';
+          ty = 24;
+        }
+        s += '<text class="tu" x="' + xc.toFixed(1) + '" y="' + ty + '">' + sub.tup + '</text>';
+      }
+    }
+    out += s + '</svg>';
+  }
+  if (!pre) DRAWN = lastNote;
+  return out + (full > MAXB ? '<p class="hint">Showing the first ' + MAXB + ' of ' + full + ' bars.</p>' : '');
+}
+var DRAWN = 1;
+/* what plays after this phrase, if anything switches */
+function nextCfg() {
+  if (RT.on) {
+    if (RT.i >= RT.items.length - 1) return null;
+    var it = RT.items[RT.i + 1], parts = it.s.split(" ");
+    return { cell: parts.join(""), groups: parts.map(function (x) { return x.length; }), sub: it.sub, m: it.m };
+  }
+  if (PS.every > 0 && !S.custom && S.nextP) return { cell: S.nextP, groups: S.groups.slice(), sub: S.sub, m: S.m };
+  return null;
+}
+function drawGrid() {
+  var nd = need(), html = gridHTML("", nd), nx = nextCfg(), cur = { cell: S.cell, groups: S.groups, sub: S.sub, m: S.m, an: S.an, ab: S.ab };
+  if (nx) {
+    S.cell = nx.cell; S.groups = nx.groups; S.sub = nx.sub; S.m = nx.m; S.an = []; S.ab = nx.m === cur.m ? cur.ab : [];
+    var nd2 = need(), o = 0, label = nx.groups.map(function (g) { var x = nx.cell.substr(o, g); o += g; return x; }).join(" ");
+    var nh = gridHTML("x", nd2);
+    S.cell = cur.cell; S.groups = cur.groups; S.sub = cur.sub; S.m = cur.m; S.an = cur.an; S.ab = cur.ab;
+    html += '<div class="upnext"><span>Up next</span><b>' + label + '</b><em>' + SUBS[nx.sub].short + ' · ' + nx.m + '</em></div><div class="nextgrid">' + nh + '</div>';
+  }
+  $("grid").innerHTML = html;
+  var nl = $("nextline");
+  if (nl) nl.textContent = nx ? "Next: " + nx.groups.map(function (g, i) { return nx.cell.substr(nx.groups.slice(0, i).reduce(function (a, b) { return a + b; }, 0), g); }).join(" ") : "";
+}
+
+function drawCell() {
+  var box = $("cell"), gi = groupInfo();
+  box.innerHTML = "";
+  for (var i = 0; i < S.cell.length; i++) (function (i) {
+    var b = document.createElement("button");
+    b.type = "button"; b.id = "c" + i; b.textContent = S.cell.charAt(i);
+    b.className = S.cell.charAt(i) + " " + (gi.gs[i] && i > 0 ? "gs " : "") + (S.an.indexOf(i) >= 0 ? "acc" : "");
+    b.setAttribute("aria-label", S.cell.charAt(i) + ", note " + (i + 1) + (S.an.indexOf(i) >= 0 ? ", accented" : ""));
+    b.addEventListener("click", function () {
+      var at = S.an.indexOf(i);
+      if (at >= 0) S.an.splice(at, 1); else S.an.push(i);
+      saveS(); drawCell(); drawGrid(); refreshKeep();
+    });
+    box.appendChild(b);
+  })(i);
+  var cy = cycle(), mt = METERS[S.m];
+  $("meta").innerHTML = "";
+  var t = S.cell.length + (S.sub === "beat" ? " notes, <b>each grouping fills one beat</b>, in " : " notes as <b>" + SUBS[S.sub].name + "</b> in ") + S.m + (mt.g ? " (" + mt.g + ")" : "") + ": ";
+  t += cy.bars === 1 && cy.reps === 1 ? "fills one bar." :
+       "lines up after <b>" + cy.bars + (cy.bars === 1 ? " bar" : " bars") + "</b> (" + cy.reps + " times through).";
+  $("meta").innerHTML = t + "<br>Tap a letter to accent it.";
+}
+
+function drawBeats() {
+  var box = $("beats"), mt = METERS[S.m];
+  box.innerHTML = "";
+  S.ab = S.ab.filter(function (b) { return b <= mt.top; });
+  for (var i = 1; i <= mt.top; i++) (function (i) {
+    var b = document.createElement("button");
+    b.type = "button"; b.textContent = i;
+    b.setAttribute("aria-pressed", String(S.ab.indexOf(i) >= 0));
+    b.setAttribute("aria-label", "Accent beat " + i);
+    b.addEventListener("click", function () {
+      var at = S.ab.indexOf(i);
+      if (at >= 0) S.ab.splice(at, 1); else S.ab.push(i);
+      b.setAttribute("aria-pressed", String(at < 0));
+      saveS(); drawGrid(); refreshKeep();
+    });
+    box.appendChild(b);
+  })(i);
+}
+function redraw() { drawCell(); drawGrid(); refreshKeep(); }
+
+function setPhrase(p, groups, an, custom) {
+  S.cell = p; S.groups = groups; S.an = an || []; S.custom = !!custom;
+  S.nextP = custom ? "" : dealPhrase(S.g, S.blocks, S.lv, S.hands, p);
+  saveS(); redraw();
+}
+function shuffle() {
+  var p = dealPhrase(S.g, S.blocks, S.lv, S.hands, S.cell), gr = [];
+  for (var i = 0; i < S.blocks; i++) gr.push(S.g);
+  setPhrase(p, gr, [], false);
+}
+
+/* typed phrase */
+function parseTyped(txt) {
+  var parts = txt.toUpperCase().replace(/[|,\/\-]+/g, " ").trim().split(/\s+/).filter(Boolean);
+  var p = parts.join("");
+  if (!p) return { err: "Type some R, L or K first." };
+  if (/[^RLK]/.test(p)) return { err: "Only R, L and K. Spaces split the groups." };
+  if (p.length > 32) return { err: "Keep it to 32 notes or fewer." };
+  return { p: p, groups: parts.map(function (x) { return x.length; }) };
+}
+function useTyped() {
+  var r = parseTyped($("typed").value), m = $("typeMsg");
+  if (r.err) { m.textContent = r.err; m.className = "hint bad"; return; }
+  setPhrase(r.p, r.groups, [], true);
+  m.textContent = "Loaded. Switch the notes to read it in another subdivision."; m.className = "hint";
+}
+$("useTyped").addEventListener("click", useTyped);
+$("typed").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); useTyped(); } });
+$("shuffle").addEventListener("click", shuffle);
+
+/* ---------- pickers ---------- */
+function seg(id, items, get, pick) {
+  var box = $(id); box.innerHTML = "";
+  items.forEach(function (it) {
+    var b = document.createElement("button");
+    b.type = "button"; b.textContent = it.label;
+    if (it.word) b.className = "word";
+    if (it.title) b.setAttribute("aria-label", it.title);
+    b.setAttribute("aria-pressed", String(get() === it.value));
+    b.addEventListener("click", function () {
+      pick(it.value);
+      var all = box.querySelectorAll("button");
+      for (var i = 0; i < all.length; i++) all[i].setAttribute("aria-pressed", String(all[i] === b));
+    });
+    box.appendChild(b);
+  });
+}
+function W(label, value, title) { return { label: label, value: value, word: true, title: title }; }
+function buildPickers() {
+  seg("segS", SUB_ORDER.map(function (k) { return { label: SUBS[k].short, value: k, title: SUBS[k].name }; }),
+    function () { return S.sub; }, function (v) { S.sub = v; saveS(); redraw(); });
+  seg("segM", Object.keys(METERS).map(function (m) { return { label: m, value: m }; }),
+    function () { return S.m; }, function (v) { S.m = v; saveS(); drawBeats(); redraw(); statusIdle(); });
+  seg("segG", [2, 3, 4, 5, 6, 7, 8, 9].map(function (v) { return { label: String(v), value: v }; }),
+    function () { return S.g; }, function (v) { S.g = v; saveS(); shuffle(); });
+  seg("segB", [1, 2, 3, 4].map(function (v) { return W(v === 1 ? "1 grouping" : v + " groupings", v, v + " groupings per phrase"); }),
+    function () { return S.blocks; }, function (v) { S.blocks = v; saveS(); shuffle(); });
+  seg("segL", [1, 2, 3].map(function (v) { return W(LEVELS[v].name, v); }),
+    function () { return S.lv; }, function (v) { S.lv = v; saveS(); shuffle(); });
+  seg("segH", [W("Hands + kick", 0), W("Hands only", 1)],
+    function () { return S.hands; }, function (v) { S.hands = v; saveS(); shuffle(); });
+  seg("segU", [W("bars", "bars"), W("line-ups", "cycles")],
+    function () { return PS.unit; }, function (v) { PS.unit = v; saveP(); showEv(); });
+  seg("segC", [W("Off", 0), W("1 bar", 1), W("2 bars", 2)],
+    function () { return PS.count; }, function (v) { PS.count = v; saveP(); });
+  seg("segV", [W("Off", 0), W("Count-in", 1), W("Always", 2)],
+    function () { return PS.voice; }, function (v) { PS.voice = v; saveP(); });
+}
+
+/* ---------- saved ---------- */
+function sig(o) { return [o.p, (o.groups || []).join("."), o.m, o.sub, (o.ab || []).slice().sort().join("."), (o.an || []).slice().sort().join(".")].join("|"); }
+function cur() { return { p: S.cell, groups: S.groups.slice(), m: S.m, sub: S.sub, lv: S.lv, ab: S.ab.slice(), an: S.an.slice() }; }
+function norm(it) {
+  return { p: it.p, groups: it.groups && it.groups.length ? it.groups : [it.p.length], m: METERS[it.m] ? it.m : "4/4",
+    sub: SUBS[it.sub] ? it.sub : "s", lv: it.lv || 2, ab: it.ab || [], an: it.an || [] };
+}
+saved = saved.filter(function (x) { return x && x.p; }).map(norm);
+function refreshKeep() {
+  var c = sig(cur()), on = saved.some(function (x) { return sig(x) === c; });
+  $("keep").textContent = on ? "Saved" : "Save"; $("keep").disabled = on;
+}
+function renderSaved() {
+  var ul = $("saved"); ul.innerHTML = "";
+  if (!saved.length) { ul.innerHTML = '<li class="empty">Nothing saved yet. Tap Save on a phrase you like.</li>'; return; }
+  saved.forEach(function (it, idx) {
+    var li = document.createElement("li"), p = document.createElement("span"), m = document.createElement("span");
+    p.className = "p"; m.className = "m";
+    var o = 0; p.textContent = it.groups.map(function (len) { var s = it.p.substr(o, len); o += len; return s; }).join(" ");
+    m.textContent = SUBS[it.sub].short + " in " + it.m + (it.ab.length ? ", accents " + it.ab.slice().sort().join(" ") : "");
+    var ob = document.createElement("button"); ob.type = "button"; ob.className = "open"; ob.textContent = "Open";
+    ob.addEventListener("click", function () {
+      S.m = it.m; S.sub = it.sub; S.lv = it.lv; S.ab = it.ab.slice();
+      buildPickers(); drawBeats(); setPhrase(it.p, it.groups.slice(), it.an.slice(), true); setTab("practice"); statusIdle();
+    });
+    var db = document.createElement("button"); db.type = "button"; db.textContent = "Remove";
+    db.addEventListener("click", function () { saved.splice(idx, 1); store("sixteenth-saved-v1", saved); renderSaved(); refreshKeep(); });
+    li.appendChild(p); li.appendChild(m); li.appendChild(ob); li.appendChild(db); ul.appendChild(li);
+  });
+}
+$("keep").addEventListener("click", function () {
+  var c = cur(); if (saved.some(function (x) { return sig(x) === sig(c); })) return;
+  saved.unshift(c); store("sixteenth-saved-v1", saved); renderSaved(); refreshKeep();
+});
+
+/* ---------- sounds ---------- */
+var A = { ctx: null, playing: false };
+function ensureCtx() {
+  var AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return false;
+  if (!A.ctx) {
+    A.ctx = new AC();
+    var len = A.ctx.sampleRate, buf = A.ctx.createBuffer(1, len, A.ctx.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    A.noise = buf;
+    A.cg = A.ctx.createGain(); A.cg.connect(A.ctx.destination);
+    A.pg = A.ctx.createGain(); A.pg.connect(A.ctx.destination);
+    A.vg = A.ctx.createGain(); A.vg.connect(A.ctx.destination);
+    applyVol();
+  }
+  if (A.ctx.state !== "running") A.ctx.resume();
+  return true;
+}
+function vol(v) { return (v / 100) * (v / 100); }
+function applyVol() {
+  if (!A.cg) return;
+  A.cg.gain.value = vol(PS.click) * 0.8; A.pg.gain.value = vol(PS.phrase) * 0.9; A.vg.gain.value = vol(PS.vvoice) * 1.2;
+}
+function env(g, t, peak, dec, att) {
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(peak, t + (att || 0.002));
+  g.gain.exponentialRampToValueAtTime(0.0008, t + dec);
+}
+function osc(type, f, t, dec, peak, out, f2) {
+  var o = A.ctx.createOscillator(), g = A.ctx.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dec * 0.6);
+  env(g, t, peak, dec); o.connect(g); g.connect(out); o.start(t); o.stop(t + dec + 0.02);
+}
+function noise(t, dec, peak, out, ftype, freq, q) {
+  var s = A.ctx.createBufferSource(), f = A.ctx.createBiquadFilter(), g = A.ctx.createGain();
+  s.buffer = A.noise; f.type = ftype; f.frequency.value = freq; if (q) f.Q.value = q;
+  env(g, t, peak, dec); s.connect(f); f.connect(g); g.connect(out);
+  s.start(t, Math.random() * 0.5); s.stop(t + dec + 0.02);
+}
+/* hand sounds: p = pitch factor (R = 1, L lower when split is on), a = 1 normal, louder on accents */
+var HANDS = {
+  snare: { name: "Snare", play: function (t, p, a, o) {
+    noise(t, 0.14, 0.75 * a, o, "highpass", 1400);
+    noise(t, 0.08, 0.35 * a, o, "bandpass", 3500, 0.8);
+    osc("triangle", 200 * p, t, 0.07, 0.5 * a, o, 160 * p);
+  } },
+  brush: { name: "Soft snare", play: function (t, p, a, o) {
+    noise(t, 0.09, 0.45 * a, o, "bandpass", 2600 * p, 0.6);
+    osc("sine", 190 * p, t, 0.05, 0.25 * a, o);
+  } },
+  rim: { name: "Rim click", play: function (t, p, a, o) {
+    noise(t, 0.025, 0.55 * a, o, "bandpass", 3200 * p, 2);
+    osc("square", 820 * p, t, 0.03, 0.18 * a, o);
+  } },
+  wood: { name: "Wood block", play: function (t, p, a, o) {
+    osc("sine", 1050 * p, t, 0.06, 0.7 * a, o);
+    noise(t, 0.012, 0.25 * a, o, "bandpass", 2000 * p, 3);
+  } },
+  tone: { name: "Plain tone", play: function (t, p, a, o) {
+    osc("triangle", 392 * p, t, a > 0.7 ? 0.2 : 0.14, 0.7 * a, o);
+  } }
+};
+var KICKS = {
+  kick: { name: "Kick drum", play: function (t, a, o) {
+    osc("sine", 160, t, 0.32, 1.1 * a, o, 46);
+    noise(t, 0.015, 0.25 * a, o, "lowpass", 1500);
+  } },
+  soft: { name: "Soft kick", play: function (t, a, o) { osc("sine", 110, t, 0.22, 0.9 * a, o, 50); } },
+  tom: { name: "Low tom", play: function (t, a, o) { osc("sine", 130, t, 0.38, 0.9 * a, o, 92); osc("triangle", 130, t, 0.08, 0.2 * a, o, 100); } },
+  tone: { name: "Low tone", play: function (t, a, o) { osc("triangle", 110, t, 0.2, 0.9 * a, o); } }
+};
+var CLICKS = {
+  beep: { name: "Beep", play: function (t, lv, o) { osc("sine", lv === 2 ? 2400 : 1700, t, 0.045, lv === 0 ? 0.25 : 0.9, o); } },
+  wood: { name: "Wood", play: function (t, lv, o) { osc("sine", lv === 2 ? 1900 : 1450, t, 0.04, lv === 0 ? 0.3 : 0.95, o); noise(t, 0.01, lv === 0 ? 0.1 : 0.3, o, "bandpass", 2500, 3); } },
+  cow: { name: "Cowbell", play: function (t, lv, o) {
+    var pk = lv === 0 ? 0.12 : 0.4, f = lv === 2 ? 1.15 : 1;
+    osc("square", 562 * f, t, 0.12, pk, o); osc("square", 845 * f, t, 0.12, pk * 0.8, o);
+  } },
+  tick: { name: "Hi-hat tick", play: function (t, lv, o) { noise(t, lv === 2 ? 0.05 : 0.03, lv === 0 ? 0.25 : 0.8, o, "highpass", 7000); } }
+};
+function hit(ch, t, acc) {
+  var a = acc ? 1 : 0.45;
+  if (ch === "K") (KICKS[PS.ks] || KICKS.kick).play(t, acc ? 1 : 0.6, A.pg);
+  else (HANDS[PS.hs] || HANDS.snare).play(t, ch === "L" && PS.split ? 0.82 : 1, a, A.pg);
+}
+function clk(t, lv) { (CLICKS[PS.cs] || CLICKS.beep).play(t, lv, A.cg); }
+
+function buildSounds() {
+  seg("sndH", Object.keys(HANDS).map(function (k) { return W(HANDS[k].name, k); }), function () { return PS.hs; },
+    function (v) { PS.hs = v; saveP(); preview("R"); });
+  seg("sndSplit", [W("Different", 1), W("Same", 0)], function () { return PS.split; },
+    function (v) { PS.split = v; saveP(); preview("L"); });
+  seg("sndK", Object.keys(KICKS).map(function (k) { return W(KICKS[k].name, k); }), function () { return PS.ks; },
+    function (v) { PS.ks = v; saveP(); preview("K"); });
+  seg("sndC", Object.keys(CLICKS).map(function (k) { return W(CLICKS[k].name, k); }), function () { return PS.cs; },
+    function (v) { PS.cs = v; saveP(); preview("C"); });
+}
+function preview(w) {
+  if (!ensureCtx()) return;
+  var t = A.ctx.currentTime + 0.03;
+  if (w === "C") { clk(t, 2); clk(t + 0.35, 1); clk(t + 0.7, 0); }
+  else if (w === "RA") { hit("R", t, false); hit("R", t + 0.25, true); }
+  else hit(w, t, false);
+}
+Array.prototype.forEach.call(document.querySelectorAll("[data-prev]"), function (b) {
+  b.addEventListener("click", function () { preview(b.getAttribute("data-prev")); });
+});
+
+/* voice samples */
+function loadVoice() {
+  if (A.voice || A.voiceLoading) return;
+  A.voiceLoading = true;
+  Promise.all(VOICE.map(function (b64) {
+    var bin = atob(b64), u = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return new Promise(function (res) { A.ctx.decodeAudioData(u.buffer, res, function () { res(null); }); });
+  })).then(function (b) { A.voice = b; });
+}
+function say(nm, t, maxDur) {
+  if (!A.voice || !A.voice[nm - 1]) return;
+  var s = A.ctx.createBufferSource(); s.buffer = A.voice[nm - 1]; s.connect(A.vg);
+  s.start(t); s.stop(t + Math.max(0.08, maxDur));
+}
+
+/* ---------- transport ---------- */
+function later(t, fn) { setTimeout(function () { if (A.playing) fn(); }, Math.max(0, (t - A.ctx.currentTime) * 1000)); }
+function stat(big, small) { $("bigstat").textContent = big; $("smallstat").textContent = small || ""; }
+function statusIdle() {
+  var mt = METERS[S.m];
+  stat("Ready", "Pulse = quarter note" + (mt.bot === 8 ? ", clicks " + mt.g : ""));
+}
+function hl(k) {
+  if (A.hk != null) ["n" + A.hk, "t" + A.hk, "c" + A.hc].forEach(function (id) { var e = $(id); if (e) e.classList.remove("on"); });
+  if (k < 0) { A.hk = null; return; }
+  A.hk = k; A.hc = k % S.cell.length;
+  ["n" + k, "t" + k, "c" + A.hc].forEach(function (id) { var e = $(id); if (e) e.classList.add("on"); });
+  var e = $("n" + k), row = e && e.closest ? e.closest("svg") : null;
+  if (row && row !== A.row) {
+    if (A.row) A.row.classList.remove("cur");
+    A.row = row; row.classList.add("cur");
+    /* follow like a play-along video: keep the line you're on in the upper part of the screen */
+    var r = row.getBoundingClientRect();
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var target = window.scrollY + r.top - window.innerHeight * 0.22;
+    if (Math.abs(r.top - window.innerHeight * 0.22) > 24) window.scrollTo({ top: Math.max(0, target), behavior: reduce ? "auto" : "smooth" });
+  }
+}
+function need() {
+  if (RT.on) { var c = cycle().bars; return Math.ceil(RT.r.bars / c) * c; }
+  if (PS.every <= 0) return 0;
+  var cb = cycle().bars;
+  if (PS.unit === "cycles") return PS.every * cb;
+  /* bars mode never cuts a phrase before it lines up: round up to the next full line-up */
+  return Math.ceil(PS.every / cb) * cb;
+}
+
+/* One step = gcd of note length and beat length, so clicks and notes share one clock and never drift. */
+function tick() {
+  var ctx = A.ctx;
+  while (A.next < ctx.currentTime + 0.12) {
+    var t = A.next;
+    if (A.bpos === 0) barStart(t);
+    var bp = A.bpos;
+    if (bp % A.bk === 0) {
+      var bi = bp / A.bk;
+      clk(t, bp === 0 ? 2 : (A.mts.indexOf(bp) >= 0 ? 1 : 0));
+      if (PS.voice === 2 || (PS.voice === 1 && A.counting)) say(bi + 1, t, A.bk / TPQ * 60 / PS.bpm - 0.02);
+    }
+    var ni = A.tm ? A.tm.map[A.lt % A.tm.L] : null;
+    if (!A.counting && ni != null) {
+      var k = Math.floor(A.lt / A.tm.L) * A.tm.n + ni;
+      hit(A.cell.charAt(ni), t, noteAcc(k, A.cell, A.tm));
+      (function (kk) { later(t, function () { hl(kk % DRAWN); }); })(k);
+    }
+    A.next += A.step / TPQ * 60 / PS.bpm;
+    A.bpos += A.step;
+    if (!A.counting) A.lt += A.step;
+    if (A.bpos >= A.bt) A.bpos = 0;
+  }
+}
+function barStart(t) {
+  A.bt = barT(S.m); A.bk = beatT(S.m); A.mts = mainT(S.m);
+  if (A.countLeft > 0) {
+    A.counting = true;
+    var cb = PS.count - A.countLeft + 1; A.countLeft--;
+    later(t, function () { stat("Count-in", "bar " + cb + " of " + PS.count); });
+  } else {
+    A.counting = false;
+    var nd = need(), key = S.cell + "|" + S.groups.join(".") + "|" + S.sub + "|" + S.m;
+    if (RT.on && nd > 0 && A.pbars >= nd && RT.i < RT.items.length - 1) {
+      RT.i++; applyItem();
+      later(t, function () { showRoutine(); redraw(); });
+      A.cell = S.cell; A.groups = S.groups.slice(); A.lt = 0; A.pbars = 0;
+      A.key = S.cell + "|" + S.groups.join(".") + "|" + S.sub + "|" + S.m;
+      A.bt = barT(S.m); A.bk = beatT(S.m); A.mts = mainT(S.m);
+      nd = need();
+    } else if (RT.on) {
+      if (key !== A.key) { A.cell = S.cell; A.groups = S.groups.slice(); A.lt = 0; A.pbars = 0; A.key = key; }
+    } else if (nd > 0 && A.pbars >= nd) {
+      var p = (S.nextP && S.nextP.length === S.g * S.blocks) ? S.nextP : dealPhrase(S.g, S.blocks, S.lv, S.hands, A.cell), gr = [];
+      for (var i = 0; i < S.blocks; i++) gr.push(S.g);
+      if (S.custom) { p = A.cell; gr = S.groups.slice(); }
+      A.cell = p; A.groups = gr; A.lt = 0; A.pbars = 0; A.key = p + "|" + gr.join(".") + "|" + S.sub + "|" + S.m;
+      if (!S.custom) later(t, function () { setPhrase(p, gr, [], false); });
+    } else if (key !== A.key) { A.cell = S.cell; A.groups = S.groups.slice(); A.lt = 0; A.pbars = 0; A.key = key; }
+    A.tm = timing(A.cell, A.groups, S.sub);
+    A.notes = lcm(A.tm.L, A.bt) / A.tm.L * A.tm.n;
+    A.pbars++;
+    var pb = A.pbars;
+    later(t, function () {
+      var un = document.querySelector(".upnext"); if (un) un.classList.toggle("soon", pb === nd);
+      if (RT.on) stat("Bar " + pb + " of " + nd, RT.i >= RT.items.length - 1 ? "last one, loops here" : (pb === nd ? "next phrase coming" : (nd - pb) + " bars to next"));
+      else if (nd > 0 && !S.custom) stat("Bar " + pb + " of " + nd, pb === nd ? "new phrase next bar" : (nd - pb) + " to go");
+      else stat("Bar " + pb, S.custom ? "your phrase, loops until you change it" : "loops until you shuffle");
+    });
+  }
+  A.step = A.tm ? tStep(A.tm, A.bk) : A.bk;
+}
+function start() {
+  if (!ensureCtx()) { stat("No audio", "this browser can't play sound"); return; }
+  loadVoice();
+  A.playing = true; A.bpos = 0; A.lt = 0; A.pbars = 0; A.cell = S.cell; A.groups = S.groups.slice(); A.key = ""; A.tm = null;
+  A.countLeft = PS.count; A.counting = false; A.hk = null; A.row = null;
+  A.next = A.ctx.currentTime + 0.15;
+  A.timer = setInterval(tick, 25);
+  $("play").textContent = "Stop"; $("play").classList.add("on");
+  try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(function (l) { A.lock = l; }, function () {}); } catch (e) {}
+  tick();
+}
+function stop() {
+  clearInterval(A.timer); A.playing = false; hl(-1); if (A.row) A.row.classList.remove("cur"); A.row = null;
+  if (A.lock) { try { A.lock.release(); } catch (e) {} A.lock = null; }
+  $("play").textContent = "Play"; $("play").classList.remove("on"); statusIdle();
+}
+$("play").addEventListener("click", function () { A.playing ? stop() : start(); });
+document.addEventListener("keydown", function (e) {
+  if (e.code === "Space" && !/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); A.playing ? stop() : start(); }
+});
+
+function setBpm(v) {
+  v = Math.round(Number(v)); if (!(v >= 30)) v = 30; if (v > 260) v = 260;
+  PS.bpm = v; $("bpm").value = v; saveP();
+}
+$("bpm").addEventListener("change", function (e) { setBpm(e.target.value); });
+$("bpmDn").addEventListener("click", function () { setBpm(PS.bpm - 2); });
+$("bpmUp").addEventListener("click", function () { setBpm(PS.bpm + 2); });
+var taps = [];
+$("tap").addEventListener("click", function () {
+  var now = performance.now();
+  if (taps.length && now - taps[taps.length - 1] > 2000) taps = [];
+  taps.push(now); if (taps.length > 6) taps.shift();
+  if (taps.length >= 2) setBpm(60000 / ((taps[taps.length - 1] - taps[0]) / (taps.length - 1)));
+});
+function showEv() { $("ev").textContent = PS.every ? PS.every : "Off"; }
+$("evDn").addEventListener("click", function () { PS.every = Math.max(0, PS.every - 1); saveP(); showEv(); drawGrid(); });
+$("evUp").addEventListener("click", function () { PS.every = Math.min(32, PS.every + 1); saveP(); showEv(); drawGrid(); });
+[["vClick", "click"], ["vPhrase", "phrase"], ["vVoice", "vvoice"]].forEach(function (a) {
+  var el = $(a[0]); el.value = PS[a[1]];
+  el.addEventListener("input", function () { PS[a[1]] = Number(el.value); applyVol(); saveP(); });
+});
+
+
+/* ---------- routines: ready-made lessons ---------- */
+function rlx(n) { var out = []; for (var i = 0; i < (1 << n); i++) { var t = ""; for (var b = n - 1; b >= 0; b--) t += (i >> b) & 1 ? "L" : "R"; out.push(t); } return out; }
+function doubles(x) { var c = 0; for (var i = 1; i < x.length; i++) if (x[i] === x[i - 1]) c++; return c; }
+function byFeel(a, b) { return doubles(a.replace(/ /g, "")) - doubles(b.replace(/ /g, "")); }
+var F4 = rlx(4);
+function pairs(tails) { return [].concat.apply([], F4.map(function (a) { return tails.map(function (t) { return a + " " + t; }); })); }
+function items(list, sub, m) { return list.map(function (x) { return { s: x, sub: sub, m: m }; }); }
+var ROUTINES = [
+  { cat: "Hands", color: "var(--r)", title: "Single-beat combos", why: "Every 8-note R/L sticking, from flowing singles to stacked doubles. The classic hands workout.",
+    bars: 4, tip: "Smooth, even strokes. Same height on every note.",
+    make: function () { var e = []; F4.forEach(function (a) { F4.forEach(function (b) { e.push(a + " " + b); }); }); return items(e.sort(byFeel), "e", "4/4"); } },
+  { cat: "Hands", color: "var(--r)", title: "Triplet mixes", why: "A beat of 16ths, then two beats of triplets. Trains you to shift gears on the beat.",
+    bars: 3, tip: "Feel the gear change on beats 2 and 3. Keep the pulse dead still.",
+    make: function () { return items(pairs(["RLR LRL", "LRL RLR"]).sort(byFeel), "beat", "3/4"); } },
+  { cat: "Hands", color: "var(--r)", title: "Roll prep", why: "A 4-note sticking into a burst of singles. Gets you in and out of rolls cleanly.",
+    bars: 2, tip: "Land the first note of each burst with intent.",
+    make: function () { return items(pairs(["RLRL RLRL", "LRLR LRLR"]).sort(byFeel), "s", "3/4"); } },
+  { cat: "Time", color: "var(--fg)", title: "Subdivision ladder", why: "Your current sticking climbs from quarters to sextuplets while the pulse stays put.",
+    bars: 4, tip: "Don't speed up the pulse. Only the notes get closer together.",
+    make: function () { var g = S.groups.slice(), p = S.cell, o = 0; var sp = g.map(function (n) { var x = p.substr(o, n); o += n; return x; }).join(" ");
+      return ["q", "e", "et", "s", "s5", "s6"].map(function (k) { return { s: sp, sub: k, m: "4/4" }; }); } },
+  { cat: "Time", color: "var(--fg)", title: "Odd groupings over 4/4", why: "Groups of 3, 5 and 7 as 16ths, played until they land back on beat 1.",
+    bars: 1, tip: "Count the pulse out loud. Let the grouping fight it.",
+    make: function () { return items(["RLL", "RLK", "RLRLL", "RLRLK", "RLRLRLL", "RLRKRLK"], "s", "4/4"); } },
+  { cat: "Hands + feet", color: "var(--k)", title: "Kick placement", why: "The kick moves through every spot in a 4-note block, as 16ths.",
+    bars: 2, tip: "Kick and hands should sound like one instrument.",
+    make: function () { var out = []; for (var i = 0; i < 81; i++) { var t = "", n = i, k = 0; for (var j = 0; j < 4; j++) { var c = "LRK".charAt(n % 3); n = Math.floor(n / 3); t = c + t; if (c === "K") k++; } if (k === 1 || k === 2) out.push(t); }
+      out.sort(function (a, b) { return (a.split("K").length - b.split("K").length) || byFeel(a, b); }); return items(out, "s", "4/4"); } },
+  { cat: "Hands + feet", color: "var(--k)", title: "Linear flow", why: "No two limbs ever hit together or twice in a row. Fresh shuffle every time.",
+    bars: 4, tip: "Even volume between hands and kick.",
+    make: function () { var out = [], seen = {}; for (var t = 0; t < 400 && out.length < 12; t++) { var p = dealPhrase(4, 2, 1, 0, ""); if (!seen[p]) { seen[p] = 1; out.push(p.slice(0, 4) + " " + p.slice(4)); } } return items(out, "s", "4/4"); } },
+  { cat: "Odd meters", color: "var(--l)", title: "4-note blocks in 5, 7 and 9", why: "Blocks of 16ths in 5/8, 7/8 and 9/8, so the sticking keeps shifting against the bar.",
+    bars: 2, tip: "Listen for the loud clicks. They mark the 2s and 3s.",
+    make: function () { var out = []; ["5/8", "7/8", "9/8"].forEach(function (m) { ["RLRK", "RKLK", "RLLK", "RRLK"].forEach(function (b) { out.push({ s: b, sub: "s", m: m }); }); }); return out; } }
+];
+var RT = { on: false, r: null, items: [], i: 0 };
+function applyItem() {
+  var it = RT.items[RT.i], parts = it.s.split(" ");
+  S.sub = it.sub; S.m = it.m; S.ab = [];
+  S.cell = parts.join(""); S.groups = parts.map(function (x) { return x.length; }); S.an = []; S.custom = true; saveS();
+}
+function loadItem() { applyItem(); buildPickers(); drawBeats(); redraw(); showRoutine(); statusIdle(); }
+function startRoutine(r) {
+  RT = { on: true, r: r, items: r.make(), i: 0 };
+  if (A.playing) stop();
+  loadItem(); setTab("practice"); window.scrollTo(0, 0);
+}
+function showRoutine() {
+  $("rbar").hidden = !RT.on;
+  document.body.classList.toggle("inroutine", RT.on);
+  if (!RT.on) return;
+  $("rcat").textContent = RT.r.cat + " routine";
+  $("rtitle").textContent = RT.r.title;
+  $("rpos").textContent = (RT.i + 1) + " of " + RT.items.length;
+  $("rfill").style.width = ((RT.i + 1) / RT.items.length * 100) + "%";
+  $("rtip").textContent = RT.r.tip + " Moves on by itself every " + RT.r.bars + (RT.r.bars > 1 ? " bars" : " bar") + " (longer if the phrase needs time to line up).";
+  $("rPrev").disabled = RT.i === 0; $("rNext").disabled = RT.i >= RT.items.length - 1;
+}
+$("rNext").addEventListener("click", function () { if (RT.i < RT.items.length - 1) { RT.i++; loadItem(); } });
+$("rPrev").addEventListener("click", function () { if (RT.i > 0) { RT.i--; loadItem(); } });
+$("rEnd").addEventListener("click", function () { RT.on = false; showRoutine(); statusIdle(); });
+function renderRoutines() {
+  var box = $("rlist"), last = "";
+  box.innerHTML = "";
+  ROUTINES.forEach(function (r) {
+    if (r.cat !== last) { var h = document.createElement("p"); h.className = "rcat"; h.textContent = r.cat; box.appendChild(h); last = r.cat; }
+    var b = document.createElement("button"); b.type = "button"; b.className = "rcard";
+    var n = r.title === "Subdivision ladder" ? 6 : r.make().length;
+    b.innerHTML = '<span class="dot" style="background:' + r.color + '"></span><div class="txt"><strong></strong><span></span><em></em></div><b class="go">Start ›</b>';
+    b.querySelector("strong").textContent = r.title;
+    b.querySelector(".txt span").textContent = r.why;
+    b.querySelector("em").textContent = n + " phrases · " + r.bars + (r.bars > 1 ? " bars" : " bar") + " each";
+    b.addEventListener("click", function () { startRoutine(r); });
+    box.appendChild(b);
+  });
+}
+function setFocus(on) {
+  if (on) setTab("practice");
+  document.body.classList.toggle("focus", on);
+  var b = $("focus"); b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "✕" : "⛶";
+  b.setAttribute("aria-label", on ? "Exit full screen" : "Full screen sheet");
+  try {
+    if (on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(function () {});
+    if (!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {});
+  } catch (e) {}
+  window.scrollTo(0, 0);
+}
+$("focus").addEventListener("click", function () { setFocus(!document.body.classList.contains("focus")); });
+document.addEventListener("fullscreenchange", function () { if (!document.fullscreenElement && document.body.classList.contains("focus")) setFocus(false); });
+/* ---------- tabs ---------- */
+var TABS = ["routines", "practice", "sounds", "saved", "list"];
+function setTab(n) {
+  if (TABS.indexOf(n) < 0) n = "practice";
+  TABS.forEach(function (t) { $("tab-" + t).hidden = t !== n; });
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs button"), function (b) { b.setAttribute("aria-selected", String(b.getAttribute("data-tab") === n)); });
+  store("sfb-tab-v4", n);
+}
+Array.prototype.forEach.call(document.querySelectorAll("#tabs button"), function (b) {
+  b.addEventListener("click", function () { setTab(b.getAttribute("data-tab")); });
+});
+
+/* ---------- checklist: every 2-note pair and every 4-note block ---------- */
+var groups = [["Two notes", ["RL", "LR", "KL", "LK", "KR", "RK"]], ["No kick", []], ["One kick", []], ["Two kicks", []], ["Three kicks", []], ["Four kicks", []]];
+/* hand-only banks, generated: every R/L order, then mixed groupings built from them */
+function rl(n) { var out = []; for (var i = 0; i < (1 << n); i++) { var s = ""; for (var b = n - 1; b >= 0; b--) s += (i >> b) & 1 ? "L" : "R"; out.push(s); } return out; }
+var four = rl(4), eight = [];
+four.forEach(function (a) { four.forEach(function (b) { eight.push(a + " " + b); }); });
+var BANKS = [
+  ["Hands: all 8-note stickings (4 + 4)", eight],
+  ["Hands: 4 + 3 + 3", [].concat.apply([], four.map(function (a) { return [a + " RLR LRL", a + " LRL RLR"]; }))],
+  ["Hands: 4 + 4 + 4", [].concat.apply([], four.map(function (a) { return [a + " RLRL RLRL", a + " LRLR LRLR"]; }))],
+  ["Hands: 4 + 4 + 3", [].concat.apply([], four.map(function (a) { return [a + " RLRL RLR", a + " LRLR LRL"]; }))]
+];
+for (var i = 0; i < 81; i++) {
+  var s = "", nn = i, kc = 0;
+  for (var j = 0; j < 4; j++) { var c = "LRK".charAt(nn % 3); nn = Math.floor(nn / 3); s = c + s; if (c === "K") kc++; }
+  groups[kc + 1][1].push(s);
+}
+var done = load("sixteenth-flow-v1", {});
+function updateCount() {
+  var t = 0, d = 0;
+  groups.concat(BANKS).forEach(function (g) { g[1].forEach(function (b) { t++; if (done[b]) d++; }); });
+  $("count").textContent = d + " / " + t;
+}
+groups.concat(BANKS).forEach(function (g) {
+  var h = document.createElement("h2"); h.textContent = g[0]; $("list").appendChild(h);
+  var ul = document.createElement("ul"); ul.className = "blocks" + (g[1][0].length > 4 ? " wide" : "");
+  g[1].forEach(function (b) {
+    var li = document.createElement("li"), cb = document.createElement("input"), bt = document.createElement("button");
+    cb.type = "checkbox"; cb.id = "b-" + b; cb.checked = !!done[b]; cb.setAttribute("aria-label", "Done " + b);
+    cb.addEventListener("change", function () { if (cb.checked) done[b] = 1; else delete done[b]; store("sixteenth-flow-v1", done); updateCount(); });
+    bt.type = "button"; bt.innerHTML = b.split("").map(function (ch) { return '<span class="' + ch + '">' + ch + "</span>"; }).join(""); bt.setAttribute("aria-label", "Practice " + b);
+    bt.addEventListener("click", function () { var parts = b.split(" "); setPhrase(parts.join(""), parts.map(function (x) { return x.length; }), [], true); setTab("practice"); window.scrollTo(0, 0); });
+    li.appendChild(cb); li.appendChild(bt); ul.appendChild(li);
+  });
+  $("list").appendChild(ul);
+});
+$("reset").addEventListener("click", function () {
+  done = {}; store("sixteenth-flow-v1", done);
+  Array.prototype.forEach.call(document.querySelectorAll("#list input"), function (x) { x.checked = false; });
+  updateCount();
+});
+
+/* ---------- boot ---------- */
+buildPickers(); buildSounds(); drawBeats();
+var sumG = S.groups.reduce(function (a, b) { return a + b; }, 0);
+if (S.cell && /^[RLK]+$/.test(S.cell) && sumG === S.cell.length) redraw();
+else if (!S.cell) setPhrase("RLRRLRLL", [4, 4], [], true);
+else shuffle();
+setBpm(PS.bpm); showEv(); statusIdle(); renderSaved(); updateCount();
+setTab(load("sfb-tab-v4", "routines")); renderRoutines(); showRoutine();
+</script>
+
+</body></html>
