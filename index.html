@@ -215,7 +215,7 @@ body.focus main { max-width: 900px; }
 
 <main>
   <div id="nojs" style="border:1px solid #e6e8ec;border-radius:10px;padding:14px;margin-bottom:14px;font-size:15px">This page needs to run in a web browser. If you opened it from Files or a preview, open the link in Safari (or the Claude app) instead.</div>
-  <h1>Sixteenth flow blocks</h1>
+  <h1>Sixteenth flow blocks <small style="font-size:11px;color:var(--muted);font-weight:400">v6 · limbs</small></h1>
   <div class="tabs" role="tablist" id="tabs">
     <button type="button" role="tab" data-tab="routines">Routines</button>
     <button type="button" role="tab" data-tab="practice">Practice</button>
@@ -1021,13 +1021,13 @@ var F4 = rlx(4);
 function pairs(tails) { return [].concat.apply([], F4.map(function (a) { return tails.map(function (t) { return a + " " + t; }); })); }
 function items(list, sub, m) { return list.map(function (x) { return { s: x, sub: sub, m: m }; }); }
 var ROUTINES = [
-  { cat: "Hands", color: "var(--r)", title: "Single-beat combos", why: "Every 8-note R/L sticking, from flowing singles to stacked doubles. The classic hands workout.",
+  { cat: "Hands", color: "var(--r)", title: "Single-beat combos", mappable: true, why: "Every 8-note R/L sticking, from flowing singles to stacked doubles. The classic hands workout.",
     bars: 4, tip: "Smooth, even strokes. Same height on every note.",
     make: function () { var e = []; F4.forEach(function (a) { F4.forEach(function (b) { e.push(a + " " + b); }); }); return items(e.sort(byFeel), "e", "4/4"); } },
-  { cat: "Hands", color: "var(--r)", title: "Triplet mixes", why: "A beat of 16ths, then two beats of triplets. Trains you to shift gears on the beat.",
+  { cat: "Hands", color: "var(--r)", title: "Triplet mixes", mappable: true, why: "A beat of 16ths, then two beats of triplets. Trains you to shift gears on the beat.",
     bars: 3, tip: "Feel the gear change on beats 2 and 3. Keep the pulse dead still.",
     make: function () { return items(pairs(["RLR LRL", "LRL RLR"]).sort(byFeel), "beat", "3/4"); } },
-  { cat: "Hands", color: "var(--r)", title: "Roll prep", why: "A 4-note sticking into a burst of singles. Gets you in and out of rolls cleanly.",
+  { cat: "Hands", color: "var(--r)", title: "Roll prep", mappable: true, why: "A 4-note sticking into a burst of singles. Gets you in and out of rolls cleanly.",
     bars: 2, tip: "Land the first note of each burst with intent.",
     make: function () { return items(pairs(["RLRL RLRL", "LRLR LRLR"]).sort(byFeel), "s", "3/4"); } },
   { cat: "Time", color: "var(--fg)", title: "Subdivision ladder", why: "Your current sticking climbs from quarters to sextuplets while the pulse stays put.",
