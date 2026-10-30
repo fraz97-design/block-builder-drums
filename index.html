@@ -240,6 +240,7 @@ body.focus main { max-width: 900px; }
         <span id="rpos"></span>
         <button type="button" class="btn primary" id="rNext">Next ›</button>
       </div>
+      <div class="row" id="rmapRow" hidden style="margin:10px 0 0"><span class="lbl">Limbs</span><div class="seg" id="rmap" role="group" aria-label="Limb mapping"></div></div>
       <p class="rtip" id="rtip"></p>
     </div>
     <h2 style="margin-top:4px"><span class="n">1</span>Your sticking</h2>
@@ -559,7 +560,7 @@ var DRAWN = 1;
 function nextCfg() {
   if (RT.on) {
     if (RT.i >= RT.items.length - 1) return null;
-    var it = RT.items[RT.i + 1], parts = it.s.split(" ");
+    var it = RT.items[RT.i + 1], parts = (RT.r.mappable ? mapS(it.s) : it.s).split(" ");
     return { cell: parts.join(""), groups: parts.map(function (x) { return x.length; }), sub: it.sub, m: it.m };
   }
   if (PS.every > 0 && !S.custom && S.nextP) return { cell: S.nextP, groups: S.groups.slice(), sub: S.sub, m: S.m };
@@ -1050,13 +1051,22 @@ var ROUTINES = [
 /* Systematic 8-note sticking course, one routine per note value. Same math every time:
    every R/L combo of two 4-note halves, ordered from flowing singles to stacked doubles. */
 [["q", "Quarter notes", "q"], ["qt", "Quarter-note triplets", "qt"], ["e", "Eighth notes", "e"], ["et", "Eighth-note triplets", "et"], ["s", "Sixteenth notes", "s"]].forEach(function (x) {
-  ROUTINES.push({ cat: "Systematic course", color: "var(--r)", title: "Stick control course: " + x[1], why: "All 256 eight-note R/L stickings in order, easiest to hardest, played as " + x[1].toLowerCase() + ".",
+  ROUTINES.push({ cat: "Systematic course", color: "var(--r)", title: "Stick control course: " + x[1], mappable: true, why: "All 256 eight-note R/L stickings in order, easiest to hardest, played as " + x[1].toLowerCase() + ".",
     bars: 2, tip: "Work down the list in order. Don't skip the ugly ones.",
     make: function () { var e = []; F4.forEach(function (a) { F4.forEach(function (b) { e.push(a + " " + b); }); }); return items(e.sort(byFeel), x[2], "4/4"); } });
 });
 var RT = { on: false, r: null, items: [], i: 0 };
+/* Limb mapping for the stick control course: same math, different limbs. */
+var RMAPS = {
+  RL: { label: "R L", title: "Hands as written", f: function (c) { return c; } },
+  LR: { label: "L R", title: "Flipped, left hand leads", f: function (c) { return c === "R" ? "L" : c === "L" ? "R" : c; } },
+  KL: { label: "K L", title: "Right hand becomes kick", f: function (c) { return c === "R" ? "K" : c; } },
+  RK: { label: "R K", title: "Left hand becomes kick", f: function (c) { return c === "L" ? "K" : c; } }
+};
+var RMAP = load("sfb-rmap", "RL"); if (!RMAPS[RMAP]) RMAP = "RL";
+function mapS(str) { var m = RMAPS[RMAP].f; return str.replace(/[RLK]/g, m); }
 function applyItem() {
-  var it = RT.items[RT.i], parts = it.s.split(" ");
+  var it = RT.items[RT.i], parts = (RT.r.mappable ? mapS(it.s) : it.s).split(" ");
   S.sub = it.sub; S.m = it.m; S.ab = [];
   S.cell = parts.join(""); S.groups = parts.map(function (x) { return x.length; }); S.an = []; S.custom = true; saveS();
 }
@@ -1072,6 +1082,9 @@ function showRoutine() {
   if (!RT.on) return;
   $("rcat").textContent = RT.r.cat + " routine";
   $("rtitle").textContent = RT.r.title;
+  $("rmapRow").hidden = !RT.r.mappable;
+  if (RT.r.mappable) seg("rmap", Object.keys(RMAPS).map(function (k) { return W(RMAPS[k].label, k, RMAPS[k].title); }), function () { return RMAP; },
+    function (v) { RMAP = v; store("sfb-rmap", v); applyItem(); buildPickers(); drawBeats(); redraw(); });
   $("rpos").textContent = (RT.i + 1) + " of " + RT.items.length;
   $("rfill").style.width = ((RT.i + 1) / RT.items.length * 100) + "%";
   $("rtip").textContent = RT.r.tip + " Moves on by itself every " + RT.r.bars + (RT.r.bars > 1 ? " bars" : " bar") + " (longer if the phrase needs time to line up).";
