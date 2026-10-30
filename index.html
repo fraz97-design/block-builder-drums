@@ -328,7 +328,7 @@ body.stageOn .dock { display: none; }
 
 <main>
   <div id="nojs" style="border:1px solid #e6e8ec;border-radius:10px;padding:14px;margin-bottom:14px;font-size:15px">This page needs to run in a web browser. If you opened it from Files or a preview, open the link in Safari (or the Claude app) instead.</div>
-  <h1>Sixteenth flow blocks <small style="font-size:11px;color:var(--muted);font-weight:400">v10</small></h1>
+  <h1>Sixteenth flow blocks <small style="font-size:11px;color:var(--muted);font-weight:400">v11</small></h1>
   <div class="tabs" role="tablist" id="tabs">
     <button type="button" role="tab" data-tab="routines">Routines</button>
     <button type="button" role="tab" data-tab="practice">Practice</button>
@@ -983,16 +983,17 @@ var FEET = { chick: { name: "Hi-hat foot", play: function (t, a, o) {
 } } };
 /* buzz stroke: snare-like noise held across the whole event length */
 function buzzHit(t, dur, acc, ch) {
-  var a = acc ? 1 : 0.45, p = ch === "L" && PS.split ? 0.82 : 1;
-  var s = A.ctx.createBufferSource(), f = A.ctx.createBiquadFilter(), g = A.ctx.createGain();
-  s.buffer = A.noise; s.loop = true; f.type = "highpass"; f.frequency.value = 1400 * p;
+  var a = acc ? 1 : 0.45, p = ch === "L" && PS.split ? 0.82 : 1, c = A.ctx;
+  var s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), am = c.createGain(), lf = c.createOscillator(), lg = c.createGain();
+  hit(ch, t, acc);                                   /* the real stroke that starts the roll */
+  s.buffer = A.noise; s.loop = true; f.type = "highpass"; f.frequency.value = 1500 * p;
+  am.gain.value = 0.55; lf.type = "sine"; lf.frequency.value = 30; lg.gain.value = 0.45; lf.connect(lg); lg.connect(am.gain);
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.linearRampToValueAtTime(0.5 * a, t + 0.004);
-  g.gain.setValueAtTime(0.4 * a, t + Math.max(0.01, dur * 0.8));
+  g.gain.linearRampToValueAtTime(0.34 * a, t + 0.03);
+  g.gain.setValueAtTime(0.3 * a, t + Math.max(0.04, dur * 0.85));
   g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
-  s.connect(f); f.connect(g); g.connect(A.pg);
-  s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02);
-  osc("triangle", 200 * p, t, 0.07, 0.4 * a, A.pg, 160 * p);
+  s.connect(f); f.connect(am); am.connect(g); g.connect(A.pg);
+  s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02); lf.start(t); lf.stop(t + dur + 0.02);
 }
 /* grace note: quiet hit of the same hand voice */
 function graceHit(ch, t) { (HANDS[PS.hs] || HANDS.snare).play(t, ch === "L" && PS.split ? 0.82 : 1, 0.4, A.pg); }
@@ -1670,10 +1671,14 @@ function evBuild2(en, nBars, clicksOnly) {
   return out.sort(function (a, c) { return a.t - c.t || a.k - c.k; });
 }
 function evPlayHand(e, t) {
-  var spt = 60 / (PS.bpm * TPQ), cap = 0.12 * 60 / PS.bpm, g = e.grace || [];
-  var offs = g.length === 1 ? [0.030] : g.length === 2 ? [0.045, 0.022] : g.length === 3 ? [0.062, 0.040, 0.019] : [];
-  g.forEach(function (ch, i) { graceHit(ch, t - Math.min(offs[i] || 0.03, cap * (1 + i * 0))); });
-  if (e.buzz) buzzHit(t, Math.max(0.03, e.dur * spt), !!e.acc, e.h);
+  var q = 60 / PS.bpm, g = e.grace || [], n = g.length, i, gap, offs = [], gv;
+  if (n === 1) { offs = [Math.min(0.040, 0.12 * q)]; gv = 0.38; }            /* flam: one soft grace right before the note */
+  else if (n > 1) {                                                           /* drag / ruff: 2 to 3 quick graces, even spacing */
+    gap = Math.min(0.026, 0.07 * q); gv = 0.32;
+    for (i = 0; i < n; i++) offs.push(Math.min(0.022 + gap * (n - 1 - i), 0.2 * q));
+  }
+  g.forEach(function (ch, k) { (HANDS[PS.hs] || HANDS.snare).play(t - offs[k], ch === "L" && PS.split ? 0.82 : 1, gv, A.pg); });
+  if (e.buzz) buzzHit(t, Math.max(0.03, e.dur * 60 / (PS.bpm * TPQ)), !!e.acc, e.h);
   else hit(e.h, t, !!e.acc);
 }
 function qpush(time, o) { o.time = time; EP.q.push(o); }
@@ -1839,7 +1844,7 @@ function renderVer(ver, o) {
         s += svgEl("text", { x: gx, y: ys + 40, class: "gl2", fill: gh === "R" ? "var(--r)" : "var(--l)" }, gh);
         if (gi === gn - 1 && gn === 1) s += svgEl("line", { x1: gx - 2, y1: ys - 10, x2: gx + 9, y2: ys - 24, class: "gst" });
       });
-      if (gn > 1) s += svgEl("line", { x1: x - 14 - (gn - 1) * 13 + 4, y1: ys - 30, x2: x - 10, y2: ys - 30, class: "gbm" });
+      if (gn > 1) { var bx1 = x - 14 - (gn - 1) * 13 + 4; s += svgEl("line", { x1: bx1, y1: ys - 30, x2: x - 10, y2: ys - 30, class: "gbm" }) + svgEl("line", { x1: bx1, y1: ys - 24, x2: x - 10, y2: ys - 24, class: "gbm" }); }
       s += svgEl("text", { x: x, y: ys + 44, class: "stk", fill: col2 }, e.h);
       out += svgEl("g", { id: id, class: "rn" }, s);
     });
