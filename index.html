@@ -741,18 +741,25 @@ function ensureCtx() {
     A.vg = A.ctx.createGain(); A.vg.connect(A.ctx.destination);
     applyVol();
   }
-  /* iPad/iPhone: Web Audio is muted by the silent switch unless the page claims the "playback" audio session. */
-  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  /* iPad/iPhone: claim the "playback" audio session so the silent switch and other apps don't mute us,
+     and kick the context awake with a real (silent) sound inside the tap. */
+  try { if (navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback"; } catch (e) {}
   try {
     if (!A.unlock) {
-      A.unlock = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=");
-      A.unlock.loop = true; A.unlock.setAttribute("playsinline", "");
+      A.unlock = document.createElement("audio");
+      A.unlock.src = "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==";
+      A.unlock.loop = true; A.unlock.setAttribute("playsinline", ""); A.unlock.setAttribute("x-webkit-airplay", "deny");
+      A.unlock.preload = "auto"; A.unlock.volume = 0.01;
     }
-    var pr = A.unlock.play(); if (pr && pr.catch) pr.catch(function () {});
+    if (A.unlock.paused) { var pr = A.unlock.play(); if (pr && pr.catch) pr.catch(function () {}); }
   } catch (e) {}
+  try { var sb = A.ctx.createBufferSource(); sb.buffer = A.ctx.createBuffer(1, 1, 22050); sb.connect(A.ctx.destination); sb.start(0); } catch (e) {}
   if (A.ctx.state !== "running") A.ctx.resume();
   return true;
 }
+function wake() { if (A.ctx && A.ctx.state !== "running") { try { A.ctx.resume(); } catch (e) {} } }
+["touchend", "click"].forEach(function (ev) { document.addEventListener(ev, function () { if (A.ctx) { ensureCtx(); } }, true); });
+document.addEventListener("visibilitychange", function () { if (!document.hidden) wake(); });
 function vol(v) { return (v / 100) * (v / 100); }
 function applyVol() {
   if (!A.cg) return;
@@ -957,6 +964,13 @@ function barStart(t) {
 function start() {
   if (!ensureCtx()) { stat("No audio", "this browser can't play sound"); return; }
   loadVoice();
+  if (A.ctx.state !== "running") {
+    stat("Starting sound…", "");
+    var go = function () { if (A.ctx.state === "running") { start(); } else stat("Sound blocked", "tap Play again, check Control Center mute"); };
+    var r = A.ctx.resume(); if (r && r.then) r.then(go, go); else setTimeout(go, 200);
+    return;
+  }
+  A.ctx.onstatechange = function () { if (A.playing && A.ctx.state !== "running") wake(); };
   A.playing = true; A.bpos = 0; A.lt = 0; A.pbars = 0; A.cell = S.cell; A.groups = S.groups.slice(); A.key = ""; A.tm = null;
   A.countLeft = PS.count; A.counting = false; A.hk = null; A.row = null;
   A.next = A.ctx.currentTime + 0.15;
