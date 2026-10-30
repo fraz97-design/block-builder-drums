@@ -211,11 +211,17 @@ body.focus .card { border: 0; padding: 0; }
 body.focus .rbar { padding: 8px 10px; }
 body.focus #grid svg { max-width: none !important; }
 body.focus main { max-width: 900px; }
+body.playing .card { position: sticky; top: 0; z-index: 3; background: var(--bg); }
+body.playing .meta, body.playing .cardacts, body.playing .legend, body.playing .type, body.playing #typeMsg { display: none !important; }
+body.playing .card { padding: 6px 10px; }
+body.focus .card { position: sticky; top: 0; z-index: 3; background: var(--bg); padding: 6px 0; }
+body.focus .upnext, body.focus .nextgrid { display: none !important; }
+body.focus .nextline { display: block; }
 </style>
 
 <main>
   <div id="nojs" style="border:1px solid #e6e8ec;border-radius:10px;padding:14px;margin-bottom:14px;font-size:15px">This page needs to run in a web browser. If you opened it from Files or a preview, open the link in Safari (or the Claude app) instead.</div>
-  <h1>Sixteenth flow blocks <small style="font-size:11px;color:var(--muted);font-weight:400">v6 · limbs</small></h1>
+  <h1>Sixteenth flow blocks <small style="font-size:11px;color:var(--muted);font-weight:400">v7</small></h1>
   <div class="tabs" role="tablist" id="tabs">
     <button type="button" role="tab" data-tab="routines">Routines</button>
     <button type="button" role="tab" data-tab="practice">Practice</button>
@@ -561,7 +567,7 @@ function nextCfg() {
   if (RT.on) {
     if (RT.i >= RT.items.length - 1) return null;
     var it = RT.items[RT.i + 1], parts = (RT.r.mappable ? mapS(it.s) : it.s).split(" ");
-    return { cell: parts.join(""), groups: parts.map(function (x) { return x.length; }), sub: it.sub, m: it.m };
+    return { cell: parts.join(""), groups: parts.map(function (x) { return x.length; }), sub: RT.subO || it.sub, m: RT.mO || it.m };
   }
   if (PS.every > 0 && !S.custom && S.nextP) return { cell: S.nextP, groups: S.groups.slice(), sub: S.sub, m: S.m };
   return null;
@@ -673,9 +679,9 @@ function seg(id, items, get, pick) {
 function W(label, value, title) { return { label: label, value: value, word: true, title: title }; }
 function buildPickers() {
   seg("segS", SUB_ORDER.map(function (k) { return { label: SUBS[k].short, value: k, title: SUBS[k].name }; }),
-    function () { return S.sub; }, function (v) { S.sub = v; saveS(); redraw(); });
+    function () { return S.sub; }, function (v) { S.sub = v; if (RT.on && !RT.r.fixed) RT.subO = v; saveS(); redraw(); });
   seg("segM", Object.keys(METERS).map(function (m) { return { label: m, value: m }; }),
-    function () { return S.m; }, function (v) { S.m = v; saveS(); drawBeats(); redraw(); statusIdle(); });
+    function () { return S.m; }, function (v) { S.m = v; if (RT.on && !RT.r.fixed) RT.mO = v; saveS(); drawBeats(); redraw(); statusIdle(); });
   seg("segG", [2, 3, 4, 5, 6, 7, 8, 9].map(function (v) { return { label: String(v), value: v }; }),
     function () { return S.g; }, function (v) { S.g = v; saveS(); shuffle(); });
   seg("segB", [1, 2, 3, 4].map(function (v) { return W(v === 1 ? "1 grouping" : v + " groupings", v, v + " groupings per phrase"); }),
@@ -887,8 +893,10 @@ function hl(k) {
     /* follow like a play-along video: keep the line you're on in the upper part of the screen */
     var r = row.getBoundingClientRect();
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var target = window.scrollY + r.top - window.innerHeight * 0.22;
-    if (Math.abs(r.top - window.innerHeight * 0.22) > 24) window.scrollTo({ top: Math.max(0, target), behavior: reduce ? "auto" : "smooth" });
+    var cardB = document.body.classList.contains("playing") ? $("cell").closest(".card").getBoundingClientRect().bottom + 6 : 0;
+    var target = window.scrollY + r.top - cardB - 6;
+    var dockH = ($("dock") ? $("dock").offsetHeight : 0) + 8;
+    if (!document.body.classList.contains("focus") && (r.top < cardB || r.bottom > window.innerHeight - dockH)) window.scrollTo({ top: Math.max(0, target), behavior: reduce ? "auto" : "smooth" });
   }
 }
 function need() {
@@ -976,14 +984,14 @@ function start() {
   A.countLeft = PS.count; A.counting = false; A.hk = null; A.row = null;
   A.next = A.ctx.currentTime + 0.15;
   A.timer = setInterval(tick, 25);
-  $("play").textContent = "Stop"; $("play").classList.add("on");
+  $("play").textContent = "Stop"; $("play").classList.add("on"); document.body.classList.add("playing");
   try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(function (l) { A.lock = l; }, function () {}); } catch (e) {}
   tick();
 }
 function stop() {
   clearInterval(A.timer); A.playing = false; hl(-1); if (A.row) A.row.classList.remove("cur"); A.row = null;
   if (A.lock) { try { A.lock.release(); } catch (e) {} A.lock = null; }
-  $("play").textContent = "Play"; $("play").classList.remove("on"); statusIdle();
+  $("play").textContent = "Play"; $("play").classList.remove("on"); document.body.classList.remove("playing"); statusIdle();
 }
 $("play").addEventListener("click", function () { A.playing ? stop() : start(); });
 document.addEventListener("keydown", function (e) {
@@ -1030,7 +1038,7 @@ var ROUTINES = [
   { cat: "Hands", color: "var(--r)", title: "Roll prep", mappable: true, why: "A 4-note sticking into a burst of singles. Gets you in and out of rolls cleanly.",
     bars: 2, tip: "Land the first note of each burst with intent.",
     make: function () { return items(pairs(["RLRL RLRL", "LRLR LRLR"]).sort(byFeel), "s", "3/4"); } },
-  { cat: "Time", color: "var(--fg)", title: "Subdivision ladder", why: "Your current sticking climbs from quarters to sextuplets while the pulse stays put.",
+  { cat: "Time", color: "var(--fg)", title: "Subdivision ladder", fixed: true, why: "Your current sticking climbs from quarters to sextuplets while the pulse stays put.",
     bars: 4, tip: "Don't speed up the pulse. Only the notes get closer together.",
     make: function () { var g = S.groups.slice(), p = S.cell, o = 0; var sp = g.map(function (n) { var x = p.substr(o, n); o += n; return x; }).join(" ");
       return ["q", "e", "et", "s", "s5", "s6"].map(function (k) { return { s: sp, sub: k, m: "4/4" }; }); } },
@@ -1067,7 +1075,7 @@ var RMAP = load("sfb-rmap", "RL"); if (!RMAPS[RMAP]) RMAP = "RL";
 function mapS(str) { var m = RMAPS[RMAP].f; return str.replace(/[RLK]/g, m); }
 function applyItem() {
   var it = RT.items[RT.i], parts = (RT.r.mappable ? mapS(it.s) : it.s).split(" ");
-  S.sub = it.sub; S.m = it.m; S.ab = [];
+  S.sub = RT.subO || it.sub; S.m = RT.mO || it.m; S.ab = [];
   S.cell = parts.join(""); S.groups = parts.map(function (x) { return x.length; }); S.an = []; S.custom = true; saveS();
 }
 function loadItem() { applyItem(); buildPickers(); drawBeats(); redraw(); showRoutine(); statusIdle(); }
